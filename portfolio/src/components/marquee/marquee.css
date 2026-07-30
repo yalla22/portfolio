@@ -1,0 +1,102 @@
+/* ProofMarquee — seamless auto-scrolling tech ribbon under the hero. */
+
+.proof-marquee {
+  position: relative;
+  border-block: 1px solid var(--border);
+  /* Faint recessed read — the strip sits a step below the page surface. */
+  background: linear-gradient(
+    var(--bg-sunken),
+    color-mix(in srgb, var(--bg-sunken) 92%, var(--bg))
+  );
+  overflow: hidden;
+  padding-block: var(--sp-4);
+}
+
+.proof-marquee__viewport {
+  position: relative;
+  /* Soft fade at both edges so labels dissolve instead of clipping. */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+}
+
+.proof-marquee__track {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  width: max-content;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  will-change: transform;
+  animation: proof-marquee-scroll 48s linear infinite;
+}
+
+.proof-marquee:hover .proof-marquee__track {
+  animation-play-state: paused;
+}
+
+@keyframes proof-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* The track is two concatenated copies, so -50% is one full set. */
+    transform: translateX(-50%);
+  }
+}
+
+.proof-marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  white-space: nowrap;
+}
+
+.proof-marquee__dot {
+  color: var(--accent);
+  font-size: 0.7em;
+  line-height: 1;
+}
+
+.proof-marquee__label {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.proof-marquee__item:hover .proof-marquee__label {
+  color: var(--text);
+}
+
+/* Reduced motion: no autoplay. Static, wrapping, manually scrollable strip. */
+.proof-marquee[data-reduced="true"] .proof-marquee__viewport {
+  overflow-x: auto;
+}
+
+.proof-marquee[data-reduced="true"] .proof-marquee__track {
+  animation: none;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3) var(--sp-5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proof-marquee__track {
+    animation: none;
+  }
+}

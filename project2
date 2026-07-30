@@ -1,0 +1,77 @@
+similarly give for we used for buildings detection using model check it what we used and we filted (DSM - DTM), Trees detection using deepforset we filted (DSM - DTM) to avoid grass
+Let me read the building and tree detection scripts to get the exact models and filtering logic.
+
+Read c:\Users\yalla\Documents\detect\detect_buildings.py
+Read c:\Users\yalla\Documents\detect\detect_trees.py
+Here are the write-ups for Building Detection and Tree Detection, in the same format — accurate to the actual code.
+
+Building Detection — Orthomosaic + DSM Height Filtering
+Overview
+Built a geospatial building-detection pipeline that finds building footprints from drone RGB orthomosaics (GeoTIFF) and uses elevation data to eliminate flat false positives. Outputs georeferenced GeoJSON polygons (loadable in QGIS) with per-building area and height.
+
+Model Used
+LangSAM = Segment Anything (SAM) + GroundingDINO — a zero-shot, text-prompted instance segmentation model. I prompt it with "building roof" (box threshold 0.24, text threshold 0.20), so it segments rooftops directly without any custom training. (detect_buildings.py)
+
+Pipeline
+Block-wise processing — the orthomosaic is too large to fit in memory/GPU, so it's split into 2048 × 2048 blocks with 200 px overlap (rasterio windowed reads).
+Pre-filtering of blocks — skips empty/black blocks, very dark (shadow) blocks, and mostly-green blocks (>70% vegetation) since forests have no buildings — saves GPU time.
+Mask false-positive filtering (is_building_mask) — rejects: full-block masks (SAM over-segmentation), area outside 20–2000 m², masks that are >55% green (vegetation), and uses rectangularity (buildings are rectangular) as a shape cue.
+Per-class NMS (IoU 0.3) — removes duplicate detections from overlapping blocks.
+Real-world geometry — pixel area converted to m² using the raster CRS/resolution (handles both projected CRS and WGS84 lat/lon).
+The DSM Height Filter (key accuracy step)
+LangSAM, working on RGB alone, mistakes flat surfaces — roads, bare fields, concrete pads, bare soil — for buildings. To remove these I filter every detection against the DSM (Digital Surface Model) (filter_and_add_dsm_heights):
+
+Ground level = 10th percentile of the DSM in the surrounding area (the local terrain reference — effectively the DTM under the building).
+Roof level = 85th percentile of the DSM inside the footprint.
+Height = roof − ground (this is the normalized height / nDSM concept, DSM − ground/DTM).
+A detection is kept only if ≥40% of its pixels rise ≥5 m above ground, and is rejected if it's large-but-low. Uses median height to stay robust to water tanks/parapets.
+Handles CRS mismatch between ortho and DSM via on-the-fly rasterio reprojection.
+This turns a 2D RGB detector into a true 3D-aware building detector — flat ground gets dropped, only objects with real vertical structure survive.
+
+Output
+GeoJSON FeatureCollection of building polygons with area_m2, max_height_m, mean_height_m, roof_m, ground_m, and center lat/lon; plus total building count and total footprint area.
+
+Tech Stack
+Python · SAM + GroundingDINO (LangSAM / samgeo) · PyTorch (CUDA) · rasterio (GeoTIFF I/O, windowing, CRS reprojection) · OpenCV (contours, shape filters, NMS) · NumPy · GeoJSON.
+
+Tree Detection — DeepForest + DSM/DTM (CHM) Filtering
+Overview
+Built an individual-tree-detection pipeline that finds single tree crowns from drone orthomosaics and uses elevation data to separate real trees from grass/lawn/shrubs — the hard problem in rural aerial surveys, since grass is green but not a tree. Outputs georeferenced GeoJSON with crown area and tree height.
+
+Model Used
+DeepForest (weecology/deepforest-tree) — a RetinaNet-based deep-learning object detector pretrained on NEON airborne imagery specifically for tree-crown bounding-box detection. (detect_trees.py)
+
+Pipeline
+GSD-aware resampling — DeepForest is trained around ~10 cm/pixel; I resample the ortho to a target ~15 cm GSD, tuned for dense Indian tropical canopies so the model detects whole crowns instead of fragmenting one tree into many sub-crowns.
+Tiled inference — predict_tile with 400 px patches, 15% overlap; detections are scaled back to native resolution.
+Score + crown-area filtering — keep score ≥ 0.3 and crown area 2–500 m² (drops noise and unrealistic blobs).
+Green color filter (HSV) (filter_green_only) — removes non-green false positives (vehicles, roofs, rocks); trees are green, those aren't.
+Crown merging — merges overlapping/touching boxes into a single crown so one tree = one detection.
+NMS (IoU 0.3) — final dedup across tile seams.
+The DSM − DTM Height Filter (the "avoid grass" step)
+The green filter keeps trees and grass (both green). To remove grass, I compute each detection's height above ground using DSM and DTM (add_dsm_heights) — this is the Canopy Height Model (CHM = DSM − DTM):
+
+Canopy top = max DSM value at the crown center (the top of the tree surface).
+Ground level = the DTM value at that location (true bare-earth elevation). If no DTM is supplied, ground is estimated from the 10th percentile of the surrounding DSM.
+Tree height = canopy_top − ground = DSM − DTM.
+If height ≥ 1.5 m → real tree; if below 1.5 m → "greenland"/grass and discarded.
+Grass and lawns are green and flat — they pass the color filter but fail the height filter (DSM ≈ DTM) — so this cleanly isolates actual trees from ground vegetation. Handles ortho↔DSM↔DTM CRS reprojection.
+
+Output
+GeoJSON of tree crowns with score, crown_area_m2, height_m, canopy_top_m, ground_m, center coordinates; plus total tree count and total crown area.
+
+Tech Stack
+Python · DeepForest (RetinaNet, NEON-pretrained) · PyTorch (CUDA) · rasterio (GeoTIFF, DSM/DTM sampling, CRS reprojection) · OpenCV (HSV filter, box merge, NMS) · NumPy · GeoJSON.
+
+Resume Bullet Points
+Building Detection
+
+Built a geospatial building-detection pipeline on drone orthomosaics using zero-shot LangSAM (SAM + GroundingDINO) with a "building roof" text prompt, processing large GeoTIFFs block-wise via rasterio.
+Eliminated flat false positives (roads, bare fields) by filtering every detection against the DSM, computing height = roof − ground (nDSM) and rejecting detections without real vertical structure; exported georeferenced GeoJSON footprints with area and height.
+Tree Detection
+
+Built an individual-tree-crown detection pipeline on drone orthomosaics using DeepForest (RetinaNet, NEON-pretrained) with GSD-aware resampling tuned for dense tropical canopies, plus HSV green-filtering, crown merging, and NMS.
+Separated real trees from grass/lawn by computing a Canopy Height Model (CHM = DSM − DTM) and keeping only crowns ≥1.5 m tall — removing flat green vegetation that color filters alone can't reject; output GeoJSON with crown area and tree height.
+One accuracy note (same as before): these scripts have no labelled ground-truth set, so "filtered out false positives" is based on the engineered DSM/DTM height logic and design, not a measured precision/recall number. The bullets are phrased to stay truthful to that — they describe what the pipeline does, which is fully defensible in an interview.
+
+Want me to combine all three (image segmentation + buildings + trees) into a single polished "GeoAI Detection Pipeline" project section for the resume, or also cover stockpile volume detection the same way?

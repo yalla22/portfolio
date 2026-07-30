@@ -1,0 +1,242 @@
+/* ── Interactive vertical timeline ─────────────────────────────────────── */
+
+.tl-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-7);
+  align-items: start;
+}
+@media (min-width: 980px) {
+  .tl-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+    gap: var(--sp-8);
+  }
+}
+
+/* ── Rail ──────────────────────────────────────────────────────────────── */
+.tl-rail {
+  position: relative;
+  --rail-x: 16px; /* center of dots / track */
+}
+
+/* Static track + animated progress fill share the same axis. */
+.tl-rail__track {
+  position: absolute;
+  left: var(--rail-x);
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  transform: translateX(-50%);
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.tl-rail__fill {
+  --tl-progress: 0;
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 100%;
+  transform: scaleY(var(--tl-progress));
+  transform-origin: top;
+  background: linear-gradient(var(--accent), var(--accent-hover));
+  will-change: transform;
+}
+
+.tl-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+/* ── Node ──────────────────────────────────────────────────────────────── */
+.tl-node {
+  position: relative;
+  list-style: none;
+  padding-left: calc(var(--rail-x, 16px) + var(--sp-5));
+  outline: none;
+  cursor: default;
+}
+
+.tl-node__marker {
+  position: absolute;
+  left: var(--rail-x, 16px);
+  top: 0;
+  width: 32px;
+  height: 32px;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+}
+.tl-node__dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--bg-elevated);
+  border: 2px solid var(--border-strong);
+  color: var(--text-muted);
+  box-shadow: var(--shadow-xs);
+  transition: border-color 200ms var(--ease-out), color 200ms var(--ease-out),
+    background-color 200ms var(--ease-out), transform 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
+}
+
+/* Content card */
+.tl-node__content {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  padding: var(--sp-4) var(--sp-5);
+  transition: transform 200ms ease, border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+/* Accent connector nub from card to rail */
+.tl-node__content::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * var(--sp-5));
+  top: 15px;
+  width: var(--sp-5);
+  height: 1px;
+  background: var(--border);
+  transition: background-color 200ms ease;
+}
+
+.tl-node__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.tl-node__role {
+  font-size: var(--step-1);
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+.tl-node__chip {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--text-faint);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.tl-node__chip[data-kind="work"],
+.tl-node__chip[data-kind="milestone"] {
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+.tl-node__org {
+  color: var(--accent-text);
+  font-size: 0.92rem;
+  margin-top: 3px;
+}
+.tl-node__period {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+.tl-node__detail {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin-top: var(--sp-3);
+  max-width: 64ch;
+}
+
+/* ── Active (hover only — the node is non-interactive decoration) ──────── */
+.tl-node:hover .tl-node__dot {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-weak);
+  transform: scale(1.08);
+  box-shadow: 0 0 0 4px var(--accent-weak);
+}
+.tl-node:hover .tl-node__content {
+  transform: translateY(-3px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+.tl-node:hover .tl-node__content::before {
+  background: var(--accent);
+}
+
+/* ── Certifications strip ──────────────────────────────────────────────── */
+.tl-certs {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-sunken);
+  padding: var(--sp-5);
+}
+@media (min-width: 980px) {
+  .tl-certs {
+    position: sticky;
+    top: calc(var(--sp-8));
+  }
+}
+.tl-certs__label {
+  display: block;
+  color: var(--text);
+  margin-bottom: var(--sp-4);
+}
+.tl-cert-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tl-cert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+.tl-cert__icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent-weak);
+  color: var(--accent);
+  margin-top: 1px;
+}
+.tl-cert__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tl-cert__title {
+  color: var(--text);
+  font-weight: 500;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+.tl-cert__issuer {
+  color: var(--text-faint);
+  font-size: 0.8rem;
+}
+
+/* ── Reduced motion: fill is set instantly in JS; suppress card transitions */
+@media (prefers-reduced-motion: reduce) {
+  .tl-node__dot,
+  .tl-node__content,
+  .tl-node__content::before,
+  .tl-rail__fill {
+    transition: none;
+  }
+}

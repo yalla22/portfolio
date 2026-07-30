@@ -1,0 +1,129 @@
+:root,
+:root[data-theme="light"] {
+  --bg: #fbfbf9;
+  --bg-elevated: #ffffff;
+  --bg-sunken: #f2f1ec;
+  --text: #14181f;
+  --text-muted: #5b626e;
+  --text-faint: #6b7280; /* WCAG AA: ~4.7:1 on --bg */
+  --border: #e4e2db;
+  --border-strong: #cfcfc7;
+  --accent: #e2562b;
+  --accent-hover: #c8431d;
+  --accent-weak: #fbe6dd;
+  --accent-text: #a6450f;
+  --focus-ring: #e2562b;
+  /* Layered elevation scale — every component shadow routes through these. */
+  --shadow-xs: 0 1px 2px rgba(20, 24, 31, 0.05);
+  --shadow-sm: 0 1px 2px rgba(20, 24, 31, 0.05), 0 4px 10px rgba(20, 24, 31, 0.05);
+  --shadow-md: 0 1px 2px rgba(20, 24, 31, 0.04), 0 8px 24px rgba(20, 24, 31, 0.07);
+  --shadow-lg: 0 2px 4px rgba(20, 24, 31, 0.05), 0 12px 28px rgba(20, 24, 31, 0.09),
+    0 32px 64px -24px rgba(20, 24, 31, 0.16);
+  --shadow-accent: 0 4px 20px -6px color-mix(in srgb, var(--accent) 35%, transparent);
+  --shadow: var(--shadow-md); /* back-compat alias */
+  --sheen: linear-gradient(
+    to bottom,
+    color-mix(in srgb, #fff 55%, transparent),
+    transparent 32%
+  );
+  --contour: #dcd8cc; /* real contrast against --bg #fbfbf9 so the field reads */
+  --scrim: rgba(20, 24, 31, 0.45);
+}
+
+:root[data-theme="dark"] {
+  --bg: #0e1116;
+  --bg-elevated: #16191f;
+  --bg-sunken: #0a0c10;
+  --text: #eceef1;
+  --text-muted: #9aa3b0;
+  --text-faint: #7b8696; /* WCAG AA: ~4.5:1 on --bg and --bg-elevated */
+  --border: #232830;
+  --border-strong: #333a44;
+  --accent: #ff6a3d;
+  --accent-hover: #ff855e;
+  --accent-weak: #2a1b14;
+  --accent-text: #ff855e;
+  --focus-ring: #ff6a3d;
+  /* Dark elevation — deeper, higher alpha so lift still reads on near-black. */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.45), 0 16px 40px rgba(0, 0, 0, 0.55),
+    0 40px 80px -24px rgba(0, 0, 0, 0.6);
+  --shadow-accent: 0 4px 24px -6px color-mix(in srgb, var(--accent) 30%, transparent);
+  --shadow: var(--shadow-md);
+  /* A whisper, not a glare. */
+  --sheen: linear-gradient(
+    to bottom,
+    color-mix(in srgb, #fff 6%, transparent),
+    transparent 32%
+  );
+  --contour: #1a2029;
+  --scrim: rgba(0, 0, 0, 0.55);
+}
+
+:root {
+  /* Type families */
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Type scale — 1.250 major third, fluid */
+  --text-mono-xs: 0.75rem;
+  --step--1: 0.8rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.563rem;
+  --step-3: clamp(1.5rem, 3vw, 1.953rem);
+  --step-4: clamp(1.9rem, 6vw, 3.05rem);
+  --step-5: clamp(2.2rem, 7vw, 4.1rem);
+
+  /* Spacing — 8px base */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+  --sp-9: 96px;
+  --sp-10: 128px;
+
+  /* Tightened vertical rhythm — kills the PDF-like emptiness. */
+  --section-y: clamp(72px, 8vh, 112px);
+  --page-inset: clamp(20px, 5vw, 80px);
+  --content-max: 1120px;
+  --spine-w: 72px;
+
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+
+  /* Unified motion curve (was hand-written cubic-bezier in 3 files). */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Showcase / Work visual panels — fixed media aspect ratio. */
+  --showcase-aspect: 16 / 10;
+  /* Proficiency meter bar height (Stack SkillCard). */
+  --meter-h: 8px;
+}
+
+/* Scale the content area up on large laptops & monitors so the layout
+   fills the screen instead of sitting in a narrow centered column. */
+@media (min-width: 1500px) {
+  :root {
+    --content-max: 1280px;
+  }
+}
+@media (min-width: 1800px) {
+  :root {
+    --content-max: 1440px;
+  }
+}
+@media (min-width: 2400px) {
+  :root {
+    --content-max: 1640px;
+  }
+}

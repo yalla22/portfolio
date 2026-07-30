@@ -1,0 +1,11 @@
+# Core (you already have these): fastapi, uvicorn, httpx, scikit-learn, numpy
+fastapi>=0.110
+uvicorn[standard]>=0.29
+httpx>=0.27
+scikit-learn>=1.4
+numpy>=1.26
+
+# Semantic ranking for resume tailoring (project ↔ JD cosine).
+# Installed and ACTIVE on this machine (torch was already present). If absent,
+# the embedder falls back to TF-IDF automatically — no code change needed.
+sentence-transformers>=2.2   # neural embeddings (all-MiniLM-L6-v2, ~90MB model)

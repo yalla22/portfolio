@@ -1,0 +1,283 @@
+/* ===== Visual Showcase ===== */
+
+.showcase-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-5);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+@media (min-width: 720px) {
+  .showcase-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* 3 columns on large laptops & monitors so the grid fills wide screens. */
+@media (min-width: 1200px) {
+  .showcase-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ===== Panel ===== */
+.showcase-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+  transition: transform 200ms var(--ease-out), border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
+}
+.showcase-panel:hover,
+.showcase-panel:focus-within {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Alternating accent edge — gradient bar that trails off, left vs right
+   capability emphasis. (Positioned bar instead of border-image so it plays
+   nicely with the panel radius + overflow clip.) */
+.showcase-panel--left::before,
+.showcase-panel--right::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 2;
+  pointer-events: none;
+}
+.showcase-panel--left::before {
+  top: 0;
+  background: linear-gradient(
+    90deg,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 20%, transparent)
+  );
+}
+.showcase-panel--right::before {
+  bottom: 0;
+  background: linear-gradient(
+    270deg,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 20%, transparent)
+  );
+}
+
+/* ===== Media ===== */
+.showcase-panel__media {
+  position: relative;
+  aspect-ratio: var(--showcase-aspect);
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg-sunken);
+  border-bottom: 1px solid var(--border);
+}
+/* Bottom scrim (same treatment as project banners) — index chip legibility. */
+.showcase-panel__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--bg-elevated) 55%, transparent),
+    transparent 40%
+  );
+}
+.showcase-panel__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 320ms var(--ease-out);
+}
+.showcase-panel:hover .showcase-panel__img,
+.showcase-panel:focus-within .showcase-panel__img {
+  transform: scale(1.03);
+}
+@media (prefers-reduced-motion: reduce) {
+  .showcase-panel__img {
+    transition: none;
+  }
+  .showcase-panel:hover .showcase-panel__img,
+  .showcase-panel:focus-within .showcase-panel__img {
+    transform: none;
+  }
+}
+.showcase-panel__index {
+  z-index: 2;
+}
+.showcase-panel__index {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-3);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+}
+
+/* ===== Body ===== */
+.showcase-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+}
+.showcase-panel__title {
+  font-size: var(--step-1);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text);
+}
+.showcase-panel__caption {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.showcase-panel__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+  background: transparent;
+  border: none;
+  padding: var(--sp-2) 0;
+  cursor: pointer;
+  transition: gap 160ms ease, color 160ms ease;
+}
+.showcase-panel__cta:hover {
+  gap: 10px;
+  color: var(--accent-hover);
+}
+
+/* ===== Placeholder visual (themed SVG fallback) ===== */
+.placeholder-visual {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.placeholder-visual__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.placeholder-visual__badge {
+  position: absolute;
+  left: var(--sp-2);
+  bottom: var(--sp-2);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  background: color-mix(in srgb, var(--bg-elevated) 78%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  max-width: calc(100% - var(--sp-4));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- placeholder art primitives (token-driven for dark/light parity) --- */
+.pv-bg {
+  fill: var(--bg-sunken);
+}
+.pv-fill {
+  fill: var(--text-faint);
+}
+.pv-cell {
+  fill: var(--text-faint);
+}
+.pv-line {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+.pv-stroke {
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+}
+.pv-stroke-accent {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+.pv-green {
+  fill: #3f9d52;
+}
+.pv-stroke-green {
+  stroke: #3f9d52;
+  stroke-width: 1.5;
+}
+.pv-bar-accent {
+  fill: var(--accent);
+}
+.pv-invert {
+  fill: var(--bg-sunken);
+}
+.pv-mini {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: var(--text-faint);
+}
+.pv-tag-bg {
+  fill: var(--accent);
+}
+.pv-tag-text {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: #fff;
+}
+.pv-chip-pass {
+  fill: #3f9d52;
+}
+.pv-chip-warn {
+  fill: #d8961f;
+}
+.pv-chip-fail {
+  fill: var(--accent);
+}
+.pv-chip-text {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  fill: #fff;
+}
+/* Cut/Fill heat-map hues — deliberately literal (not the orange accent token);
+   mid-value reds/blues stay legible on both --bg-sunken themes. */
+.pv-heat-cut {
+  fill: #d64545;
+}
+.pv-heat-fill {
+  fill: #3b6fd4;
+}
+.pv-stroke-heat-cut {
+  stroke: #d64545;
+}
+.pv-stroke-heat-fill {
+  stroke: #3b6fd4;
+}
+.pv-watermark {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  letter-spacing: 0.3em;
+  fill: var(--text);
+  opacity: 0.14;
+}
+
+/* Reduced motion: Reveal already drops its transition; nothing animates here
+   beyond hover, which is fine. */

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Job Copilot · Janadri Yalla Yashwanth</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛩️</text></svg>">
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">🛩️</div>
+      <div class="brand-txt">
+        <div class="brand-name">Job Copilot</div>
+        <div class="brand-sub">AI application assistant</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-view="overview"><span>📊</span> Overview</button>
+      <button class="nav-item" data-view="jobs"><span>🧭</span> Browse Jobs</button>
+      <button class="nav-item" data-view="pipeline"><span>🗂️</span> Pipeline</button>
+      <button class="nav-item" data-view="tailor"><span>✏️</span> Tailor Resume</button>
+      <button class="nav-item" data-view="companies"><span>🏢</span> Companies</button>
+      <button class="nav-item" data-view="profile"><span>👤</span> Profile</button>
+    </nav>
+
+    <div class="side-foot">
+      <button id="refreshBtn" class="btn btn-grad block">↻ Refresh jobs</button>
+      <div id="refreshMsg" class="refresh-msg"></div>
+      <div class="last-seen" id="lastSeen"></div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <main class="main">
+    <header class="topbar">
+      <div class="search">
+        <span class="search-ico">🔎</span>
+        <input id="globalSearch" type="search" placeholder="Search title, company, location…  (press / )">
+      </div>
+      <div class="topbar-kpis" id="topKpis"></div>
+    </header>
+
+    <!-- ---------- OVERVIEW ---------- -->
+    <section class="view" id="view-overview">
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h3>Match-score distribution</h3><span class="hint">all fetched jobs</span></div>
+          <div class="bars" id="scoreBars"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Jobs by track</h3><span class="hint">eligible / total</span></div>
+          <div class="donut-wrap">
+            <div class="donut" id="trackDonut"></div>
+            <div class="legend" id="trackLegend"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h3>Application pipeline</h3><span class="hint">your funnel</span></div>
+          <div class="funnel" id="funnel"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Top companies for you</h3><span class="hint">by eligible matches</span></div>
+          <div class="hbars" id="companyBars"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>🔥 Top matches right now</h3>
+          <button class="btn btn-ghost sm" data-goto="jobs">See all →</button></div>
+        <div id="topMatches" class="mini-list"></div>
+      </div>
+    </section>
+
+    <!-- ---------- JOBS ---------- -->
+    <section class="view hidden" id="view-jobs">
+      <div class="filterbar card">
+        <div class="fb-row">
+          <label class="fb">Min score
+            <input type="range" id="minScore" min="0" max="100" value="45">
+            <b id="minScoreVal">45</b>
+          </label>
+          <select id="fTrack" class="sel">
+            <option value="">all tracks</option>
+            <option value="drone">drone</option><option value="cv_ml">cv_ml</option>
+            <option value="backend">backend</option><option value="fullstack">fullstack</option>
+            <option value="devops">devops</option><option value="swe">swe</option>
+          </select>
+          <select id="fSource" class="sel">
+            <option value="">all sources</option>
+            <option>greenhouse</option><option>lever</option><option>ashby</option>
+            <option>workday</option><option>smartrecruiters</option><option>remoteok</option><option>adzuna</option>
+          </select>
+          <select id="fStatus" class="sel">
+            <option value="">any status</option>
+            <option>new</option><option>saved</option><option>applied</option>
+            <option>screening</option><option>interview</option><option>offer</option>
+            <option>rejected</option><option>skipped</option>
+          </select>
+          <select id="fLevel" class="sel">
+            <option value="">all levels</option>
+            <option value="intern">🎓 internship</option>
+            <option value="new_grad">🎓 new-grad / trainee</option>
+            <option value="junior">junior</option>
+            <option value="mid">mid</option>
+            <option value="senior">senior</option>
+          </select>
+          <select id="fSort" class="sel">
+            <option value="score">sort: best match</option>
+            <option value="recent">sort: newest</option>
+            <option value="skills">sort: most skills</option>
+            <option value="company">sort: company</option>
+          </select>
+          <label class="chk"><input type="checkbox" id="fEarly"> 🎓 early-career</label>
+          <label class="chk"><input type="checkbox" id="fEligible" checked> eligible only</label>
+          <span class="grow"></span>
+          <span class="count-badge" id="jobCount">—</span>
+        </div>
+      </div>
+      <div id="jobList" class="job-list"></div>
+      <div class="loadmore-wrap"><button id="loadMore" class="btn btn-ghost hidden">Load more</button></div>
+    </section>
+
+    <!-- ---------- PIPELINE ---------- -->
+    <section class="view hidden" id="view-pipeline">
+      <div class="pipe-help">Drag cards between columns to update status. Showing jobs you've touched (not “new”).</div>
+      <div class="kanban" id="kanban"></div>
+    </section>
+
+    <!-- ---------- TAILOR ---------- -->
+    <section class="view hidden" id="view-tailor">
+      <div class="grid-2 tailor-grid">
+        <div class="card">
+          <div class="card-head"><h3>✏️ Tailor a resume to a job</h3>
+            <span class="hint">paste the JD — nothing is invented</span></div>
+          <div class="t-form">
+            <div class="t-row">
+              <label class="t-field"><span>Company</span>
+                <input id="tCompany" type="text" placeholder="e.g. Sarvam AI"></label>
+              <label class="t-field"><span>Role title</span>
+                <input id="tRole" type="text" placeholder="e.g. Machine Learning Engineer"></label>
+            </div>
+            <label class="t-field"><span>Base resume</span>
+              <select id="tBase" class="sel"><option value="">Auto-pick best match</option></select></label>
+            <label class="t-field"><span>Requirements &amp; responsibilities (paste / edit)</span>
+              <textarea id="tJd" rows="12" placeholder="Paste the job's requirements and responsibilities here…"></textarea></label>
+            <div class="t-actions">
+              <button id="tGenerate" class="btn btn-grad">⚙️ Generate tailored resume</button>
+              <button id="tClear" class="btn btn-ghost">Clear</button>
+              <span id="tMsg" class="t-msg"></span>
+            </div>
+          </div>
+        </div>
+        <div class="card" id="tResultCard">
+          <div class="card-head"><h3>Result</h3><span class="hint">what was tailored</span></div>
+          <div id="tResult"><div class="empty">Paste a JD and hit <b>Generate</b>.<br>
+            You'll get a <b>PDF</b> (and .docx) that reorders your real skills &amp; projects to match — no fabricated experience.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- COMPANIES ---------- -->
+    <section class="view hidden" id="view-companies">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h3>By source</h3><span class="hint">where jobs come from</span></div>
+          <div class="hbars" id="sourceBars"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>By track</h3><span class="hint">role families</span></div>
+          <div class="hbars" id="trackBars"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Companies</h3><span class="hint">click to filter jobs</span></div>
+        <div id="companyGrid" class="company-grid"></div>
+      </div>
+    </section>
+
+    <!-- ---------- PROFILE ---------- -->
+    <section class="view hidden" id="view-profile">
+      <div class="grid-2">
+        <div class="card" id="profileCard"></div>
+        <div class="card">
+          <div class="card-head"><h3>Scoring model</h3><span class="hint">how match % is computed</span></div>
+          <div id="weightsBox"></div>
+          <div class="card-head" style="margin-top:18px"><h3>Resume map</h3></div>
+          <div id="resumeMap" class="resume-map"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Skills the matcher knows you have</h3><span class="hint" id="skillCount"></span></div>
+        <div id="skillCloud" class="skill-cloud"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===================== JOB DETAIL DRAWER ===================== -->
+<div id="drawer" class="drawer hidden">
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <div class="drawer-panel" id="drawerPanel"></div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

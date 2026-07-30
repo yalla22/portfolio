@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Preload the two fonts used in the above-the-fold hero -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/space-grotesk-latin-700-normal.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/inter-latin-400-normal.woff2"
+      crossorigin
+    />
+
+    <title>Janadri Yalla Yashwanth — Software Engineer (Full-Stack · AI/ML · Drones)</title>
+    <meta
+      name="description"
+      content="Janadri Yalla Yashwanth — Software Engineer Trainee @ Marut Drones. I build AI that turns drone & aerial imagery into geospatial insight: computer vision, autonomous flight (ArduPilot/MAVLink), and production Python backends."
+    />
+    <meta name="author" content="Janadri Yalla Yashwanth" />
+    <meta name="theme-color" content="#FBFBF9" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Janadri Yalla Yashwanth — Software Engineer (Full-Stack · AI/ML · Drones)" />
+    <meta
+      property="og:description"
+      content="I build AI that turns drone & aerial imagery into geospatial insight. Computer vision · autonomous flight (ArduPilot/MAVLink) · production Python backends."
+    />
+    <!-- TODO(deploy): replace https://example.com with the real deployed origin.
+         Social crawlers require an ABSOLUTE URL and a raster (PNG/JPG) image —
+         generate a 1200x630 og-image.png from public/og-image.svg and drop it in public/. -->
+    <meta property="og:url" content="https://example.com/" />
+    <meta property="og:image" content="https://example.com/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Janadri Yalla Yashwanth — Software Engineer (Full-Stack · AI/ML · Drones)" />
+    <meta
+      name="twitter:description"
+      content="I build AI that turns drone & aerial imagery into geospatial insight."
+    />
+    <meta name="twitter:image" content="https://example.com/og-image.png" />
+
+    <!-- Prevent theme flash: apply persisted/system theme before paint -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("fd-theme");
+          var theme =
+            stored ||
+            (window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light");
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

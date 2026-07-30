@@ -1,0 +1,24 @@
+{
+  "name": "flight-deck-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Flight Deck — aerospace portfolio for Janadri Yalla Yashwanth",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.0.18",
+    "@fontsource/jetbrains-mono": "^5.0.20",
+    "@fontsource/space-grotesk": "^5.0.18",
+    "framer-motion": "^11.2.10",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.3.1"
+  }
+}

@@ -1,0 +1,435 @@
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  /* Denser, more confident vertical rhythm. */
+  padding-block: clamp(88px, 11vh, 120px) var(--sp-7);
+  background: var(--bg);
+  /* Intentional junction into the marquee strip below. */
+  border-bottom: 1px solid var(--border);
+}
+
+.hero__canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Parallax layers — GPU-composited transform driven by CSS vars from JS. */
+.parallax-layer {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+  transform: translate3d(var(--px, 0), var(--py, 0), 0);
+}
+.hero__layer {
+  pointer-events: none;
+}
+
+.contour-field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.55;
+}
+
+.flight-path {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Keep the survey trace strictly out of the left content column: fade it in
+     only over the right ~45% of the hero, behind the portrait/stats rail, so no
+     stroke or waypoint dot ever crosses the headline / tagline / CTAs. */
+  opacity: 0.6;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    transparent 54%,
+    #000 66%,
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    transparent 54%,
+    #000 66%,
+    #000 100%
+  );
+}
+
+/* On stacked (mobile/tablet) layouts the content spans full width, so hide the
+   flight trace entirely — the contour field still carries the background. */
+@media (max-width: 899px) {
+  .flight-path {
+    display: none;
+  }
+}
+
+/* Drone node + glow */
+.drone-node__core {
+  filter: drop-shadow(0 0 6px var(--accent));
+}
+.drone-node__ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  opacity: 0.5;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.drone-node.is-flying {
+  animation: drone-ride 14s linear infinite;
+  animation-delay: 2s;
+}
+.drone-node.is-flying .drone-node__ring {
+  animation: drone-pulse 2.4s ease-in-out infinite;
+  animation-delay: 2s;
+}
+.drone-node.is-parked {
+  offset-distance: 100%;
+}
+
+@keyframes drone-ride {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+@keyframes drone-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.15;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drone-node.is-flying,
+  .drone-node.is-flying .drone-node__ring {
+    animation: none;
+  }
+  .drone-node {
+    offset-distance: 100% !important;
+  }
+  .parallax-layer {
+    transform: none !important;
+  }
+}
+
+/* Telemetry readout — top-right corner */
+.telemetry {
+  position: absolute;
+  top: clamp(72px, 12vh, 120px);
+  right: var(--page-inset);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  font-feature-settings: "tnum" 1;
+  max-width: 60vw;
+  justify-content: flex-end;
+}
+.telemetry__sep {
+  color: var(--accent);
+}
+
+/* ── Content grid ────────────────────────────────────────────── */
+.hero__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-7);
+  align-items: center;
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .hero__inner {
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+    gap: clamp(var(--sp-6), 5vw, var(--sp-9));
+  }
+}
+
+.hero__content {
+  max-width: 760px;
+  min-width: 0;
+}
+
+.hero__eyebrow {
+  margin-bottom: var(--sp-3);
+}
+
+/* Name demoted to a small mono eyebrow line above the role headline. */
+.hero__name {
+  font-size: var(--text-mono-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 500;
+  margin-bottom: var(--sp-3);
+}
+
+/* The 15-second hook. */
+.hero__role {
+  font-family: var(--font-display);
+  font-size: var(--step-5);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: var(--sp-4);
+  max-width: 16ch;
+}
+/* Signal-Orange terminal mark — typographic confidence, zero markup change. */
+.hero__role::after {
+  content: ".";
+  color: var(--accent);
+}
+
+.hero__tagline {
+  font-size: var(--step-1);
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text);
+  max-width: 48ch;
+  margin-bottom: var(--sp-3);
+}
+
+.hero__subline {
+  font-size: var(--step-0);
+  color: var(--text-muted);
+  max-width: 56ch;
+  margin-bottom: var(--sp-5);
+}
+
+.hero__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+
+/* ── Contact row (top-of-page) ───────────────────────────────── */
+.hero-contact-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  list-style: none;
+  margin: 0 0 var(--sp-5);
+  padding: 0;
+}
+.hero-contact-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 11px;
+  text-decoration: none;
+  transition: border-color 160ms var(--ease-out), color 160ms var(--ease-out),
+    background-color 160ms var(--ease-out), transform 160ms var(--ease-out),
+    box-shadow 160ms var(--ease-out);
+}
+.hero-contact-pill:hover {
+  color: var(--accent-text);
+  background: var(--accent-weak);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-xs);
+}
+
+.hero__coords {
+  margin-top: var(--sp-2);
+}
+
+/* ── Right rail: portrait + stats ────────────────────────────── */
+.hero__rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  min-width: 0;
+}
+
+.hero-portrait {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  max-width: 320px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--sp-2);
+  background: var(--bg-elevated);
+  align-self: start;
+  box-shadow: var(--shadow-md);
+  transition: box-shadow 220ms var(--ease-out), transform 220ms var(--ease-out);
+}
+.hero-portrait:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-portrait,
+  .hero-portrait:hover {
+    transition: none;
+    transform: none;
+  }
+}
+.hero-portrait img {
+  width: 100%;
+  height: auto;
+  border-radius: calc(var(--radius) - 4px);
+  display: block;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--bg-sunken);
+}
+.hero-portrait.is-placeholder {
+  aspect-ratio: 4 / 5;
+  min-height: 280px;
+  display: grid;
+  place-items: center;
+}
+.hero-portrait.is-placeholder::after {
+  content: "DROP /public/profile.jpg";
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+.hero-portrait__tick {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 28px;
+  height: 28px;
+  border-top: 2px solid var(--accent);
+  border-left: 2px solid var(--accent);
+  border-top-left-radius: var(--radius);
+  z-index: 1;
+}
+/* Matching bottom-right registration tick — frames the portrait like a plate. */
+.hero-portrait__tick--br {
+  top: auto;
+  left: auto;
+  bottom: -1px;
+  right: -1px;
+  border-top: none;
+  border-left: none;
+  border-bottom: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
+  border-top-left-radius: 0;
+  border-bottom-right-radius: var(--radius);
+}
+.hero-portrait__caption {
+  position: absolute;
+  bottom: var(--sp-3);
+  left: var(--sp-3);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: #fff;
+  background: rgba(20, 24, 31, 0.55);
+  padding: 3px 7px;
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(4px);
+}
+
+/* Stat tiles — 2×2, reusing the readout-chip visual language. */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 0;
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow 200ms var(--ease-out), border-color 200ms var(--ease-out);
+}
+.hero-stat:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--border-strong);
+}
+.hero-stat__value {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1;
+  font-size: var(--step-3);
+  font-weight: 600;
+  color: var(--accent-text);
+  line-height: 1;
+}
+.hero-stat__icon {
+  display: inline-flex;
+  color: var(--accent);
+}
+.hero-stat__label {
+  /* Higher-contrast than the old faint label so the quantified proof reads. */
+  color: var(--text-muted);
+}
+
+/* Lead tile (the single quantified proof) spans the full rail and dominates the
+   three capability tiles instead of being equal-weight. */
+.hero-stat--lead {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: baseline;
+  gap: var(--sp-3);
+  background: var(--accent-weak);
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  /* The one deliberate glow on the page. */
+  box-shadow: var(--shadow-accent);
+}
+.hero-stat--lead .hero-stat__value {
+  font-size: var(--step-4);
+}
+.hero-stat--lead .hero-stat__label {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 899px) {
+  .hero__rail {
+    /* Keep portrait modest, let stats breathe below it. */
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 600px) {
+  .telemetry {
+    font-size: 0.6rem;
+    max-width: 70vw;
+  }
+  /* Hide the portrait on very small screens; stats stay. */
+  .hero-portrait {
+    display: none;
+  }
+  .hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

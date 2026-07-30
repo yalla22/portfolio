@@ -1,0 +1,135 @@
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-feature-settings: "tnum" 1;
+  font-weight: 500;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  white-space: nowrap;
+  transition: border-color 150ms var(--ease-out);
+}
+.tag:hover {
+  border-color: var(--border-strong);
+}
+
+.tag--accent {
+  color: var(--accent-text);
+  background: var(--accent-weak);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* Button */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  /* Magnetic offset (set imperatively) composed with the hover lift below. */
+  --mag-x: 0px;
+  --mag-y: 0px;
+  transform: translate(var(--mag-x), var(--mag-y));
+  transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out), transform 160ms var(--ease-out),
+    box-shadow 160ms var(--ease-out);
+  will-change: transform;
+}
+/* Hover lift folded into the same translate so it survives the magnetic vars. */
+.btn:hover {
+  transform: translate(var(--mag-x), calc(var(--mag-y) - 1px));
+}
+.btn:active {
+  transform: translate(var(--mag-x), var(--mag-y)) scale(0.98);
+}
+
+.btn--filled {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow-sm), var(--shadow-accent);
+}
+.btn--filled:hover {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-md), var(--shadow-accent);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.btn--ghost:hover {
+  background: var(--accent-weak);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent-text);
+}
+
+.btn--outline {
+  background: var(--bg-elevated);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn--outline:hover {
+  border-color: var(--border-strong);
+}
+
+/* Section + header */
+.section {
+  padding-block: var(--section-y);
+  scroll-margin-top: 80px;
+}
+.section--flush {
+  padding-top: 0;
+}
+
+.section-header {
+  margin-bottom: var(--sp-7);
+}
+.section-header__index {
+  display: block;
+  margin-bottom: var(--sp-2);
+}
+.section-header__title {
+  font-size: var(--step-3);
+  color: var(--text);
+}
+.section-header__lead {
+  margin-top: var(--sp-3);
+  color: var(--text-muted);
+  max-width: 60ch;
+}
+
+/* Coordinate readout */
+.coord-readout {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+.coord-readout .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}

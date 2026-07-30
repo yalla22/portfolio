@@ -1,0 +1,73 @@
+/* StickyResume — floating résumé CTA that fades in past the hero. */
+
+.sticky-resume {
+  position: fixed;
+  right: clamp(16px, 3vw, 32px);
+  bottom: clamp(16px, 3vw, 32px);
+  z-index: 40;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+
+  opacity: 0;
+  transform: translateY(12px) scale(0.96);
+  pointer-events: none;
+  transition: opacity 0.28s var(--ease-out), transform 0.28s var(--ease-out),
+    background 0.18s ease, box-shadow 0.18s var(--ease-out);
+}
+
+.sticky-resume.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.sticky-resume:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: var(--shadow-lg), var(--shadow-accent);
+}
+
+.sticky-resume:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* Keep clear of the mobile nav sheet / top bar on small screens. */
+@media (max-width: 600px) {
+  .sticky-resume {
+    right: 50%;
+    transform: translate(50%, 12px) scale(0.96);
+  }
+  .sticky-resume.is-visible {
+    transform: translate(50%, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-resume {
+    transition: opacity 0.2s ease;
+    transform: none;
+  }
+  .sticky-resume.is-visible {
+    transform: none;
+  }
+  @media (max-width: 600px) {
+    .sticky-resume,
+    .sticky-resume.is-visible {
+      transform: translateX(50%);
+    }
+  }
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#0E1116" />
+  <!-- faint contour field -->
+  <g fill="none" stroke="#16191F" stroke-width="2">
+    <path d="M0 120 C 200 80, 400 160, 600 120 S 1000 80, 1200 140" />
+    <path d="M0 220 C 220 180, 420 260, 620 220 S 1020 180, 1200 240" />
+    <path d="M0 320 C 200 280, 440 360, 640 320 S 1040 280, 1200 340" />
+    <path d="M0 440 C 220 400, 420 480, 620 440 S 1020 400, 1200 460" />
+    <path d="M0 540 C 200 500, 440 580, 640 540 S 1040 500, 1200 560" />
+  </g>
+  <!-- survey flight path -->
+  <path d="M120 470 L120 250 L260 250 L260 470 L400 470 L400 250 L540 250 L540 470"
+        fill="none" stroke="#FF6A3D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="540" cy="470" r="9" fill="#FF6A3D" />
+  <text x="120" y="120" fill="#5C6675" font-family="monospace" font-size="22" letter-spacing="4">FLIGHT DECK</text>
+  <text x="120" y="200" fill="#ECEEF1" font-family="'Segoe UI',sans-serif" font-size="64" font-weight="700">Janadri Yalla Yashwanth</text>
+  <text x="640" y="300" fill="#ECEEF1" font-family="'Segoe UI',sans-serif" font-size="34" font-weight="600">AI for drone &amp; aerial</text>
+  <text x="640" y="346" fill="#ECEEF1" font-family="'Segoe UI',sans-serif" font-size="34" font-weight="600">imagery → geospatial insight</text>
+  <text x="640" y="410" fill="#9AA3B0" font-family="monospace" font-size="20">Software Engineer @ Marut Drones</text>
+  <text x="640" y="440" fill="#9AA3B0" font-family="monospace" font-size="20">CV · ArduPilot/MAVLink · Python</text>
+</svg>

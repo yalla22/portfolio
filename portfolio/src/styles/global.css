@@ -1,0 +1,247 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Hard guarantee: never produce a horizontal scrollbar on any device.
+     `clip` (not `hidden`) avoids creating a scroll container, so position:
+     sticky on the mobile bar keeps working. */
+  overflow-x: clip;
+}
+
+body {
+  overflow-x: clip;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none;
+}
+
+/* Contour-grid background texture — the hero's survey-map material continuing
+   faintly beneath the page. Masked to the upper viewport so long sections stay
+   calm. Fixed + inset:0 → can never create horizontal scroll. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: linear-gradient(var(--contour) 1px, transparent 1px),
+    linear-gradient(90deg, var(--contour) 1px, transparent 1px);
+  background-size: 96px 96px;
+  opacity: 0.16;
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 0%,
+    #000 30%,
+    transparent 75%
+  );
+  mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 0%,
+    #000 30%,
+    transparent 75%
+  );
+}
+
+/* Theme transition — only color/background, enabled after first paint */
+:root.theme-anim,
+:root.theme-anim *:not(svg):not(svg *) {
+  transition: background-color 200ms ease, color 200ms ease,
+    border-color 200ms ease;
+}
+
+img,
+picture,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+/* Two-layer focus ring: page-bg gap + solid accent — crisp on both themes. */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--focus-ring);
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--accent-weak);
+  color: var(--accent-text);
+}
+
+/* Layout helpers */
+.container {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: var(--page-inset);
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    padding-left: var(--spine-w);
+  }
+}
+
+/* Shared hover-lift utility (referenced by ShowcasePanel / SkillCard). */
+.lift {
+  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out),
+    border-color 200ms var(--ease-out);
+}
+.lift:hover,
+.lift:focus-within {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lift,
+  .lift:hover,
+  .lift:focus-within {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Refined section divider — hairline that fades at both ends, with a small
+   accent tick at the left content edge. */
+.section-rule {
+  height: 1px;
+  margin-inline: var(--page-inset);
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border) 12%,
+    var(--border) 88%,
+    transparent
+  );
+}
+.section-rule::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  top: -1px;
+  width: 32px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.prose {
+  max-width: 68ch;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--sp-4);
+  top: -60px;
+  z-index: 200;
+  background: var(--accent-hover);
+  color: #fff;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: top 150ms ease;
+}
+.skip-link:focus {
+  top: var(--sp-4);
+}
+
+/* Programmatic skip-link target — don't paint an outline around the whole page. */
+main:focus {
+  outline: none;
+}
+
+/* Asymmetric editorial grid: narrow metadata + wide content */
+.editorial-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-5);
+}
+@media (min-width: 768px) {
+  .editorial-grid {
+    grid-template-columns: minmax(140px, 200px) 1fr;
+    gap: var(--sp-7);
+  }
+}

@@ -1,0 +1,61 @@
+What the project is
+A full-stack web application that automatically analyzes drone flight logs and generates professional PDF crash/health reports. A user uploads a raw flight log from the browser; the backend detects the log format, parses the binary/text data, runs ~50+ diagnostic checks across flight phases, and returns a downloadable PDF with charts, a flight-path map, and pass/warn/fail findings — including the probable cause of a crash.
+
+It supports two drone ecosystems: ArduPilot (.bin) and JIYI K++ agricultural drones (binary + text logs), with automatic format detection by reading file magic-byte headers.
+
+Architecture (what you actually built)
+Frontend — App.tsx
+
+React 19 + TypeScript + Vite, styled with Tailwind CSS
+File upload UI, calls the backend, parses the Content-Disposition header to name the PDF, and gives view/download options
+Backend — main.py
+
+FastAPI service with a /analyze endpoint and a /health check
+CORS middleware, file-size limits (500 MB), extension allow-listing, async upload handling
+Format auto-detection via binary magic bytes (0xA3 0x95 for ArduPilot, 0x00 0xFF / 0x37 0xC8 for JIYI), plus a printable-ASCII heuristic to tell text logs from binary
+XOR decryption of encrypted JIYI logs
+Calls a Windows .NET converter (binToLog.exe) under Mono + Xvfb (headless virtual display) inside Linux to convert proprietary JIYI binaries
+An asyncio.Lock to serialize the converter, per-job temp directories, UUID job IDs, and background cleanup tasks
+Analysis engines — ardupilot_report.py (~3,600 lines) + jiyi_report.py (~3,100 lines)
+
+Custom binary log parser written from scratch — reads the ArduPilot/DataFlash self-describing format (FMT messages), unpacks each message type with Python struct, applies field scaling, decodes strings
+GPS-week → IST real-time clock reconstruction so report timestamps show actual wall-clock time
+A FlightAnalysis engine running phased diagnostic checks: clean boot, power stability, battery voltage (cell-count aware), IMU detection/health/vibration/clipping, compass field & interference, GPS fix/satellites/HDOP, EKF readiness/variance/lane-switch/yaw, RC signal loss, arming & safety-bypass checks, failsafes, hardware-spike detection, and more
+PDF report generation with ReportLab + Matplotlib charts (flight path, altitude, voltage, vibration, attitude) and color-coded PASS/WARN/FAIL tables
+Heavy defensive data-cleaning of corrupt sensor records (timestamp sanity caps, physical-range filtering)
+Infrastructure
+
+Dockerfile — Python 3.10 image provisioning Mono, Xvfb, x11vnc
+docker-compose.yml — containerized deployment
+Resume bullet points (ready to paste)
+Flight Log Analyzer — Full-Stack Drone Diagnostics Platform · React, TypeScript, FastAPI, Python, Docker
+
+Built a full-stack web app that ingests raw drone flight logs and auto-generates professional PDF health/crash reports, supporting both ArduPilot and JIYI K++ log formats with automatic binary-vs-text format detection via magic-byte sniffing.
+Engineered a from-scratch binary parser for the ArduPilot/DataFlash self-describing log format using Python struct, decoding 50+ message types and reconstructing real-world IST timestamps from GPS-week data.
+Implemented a phased diagnostic engine running 50+ automated checks (power, IMU/vibration, GPS, EKF, compass, RC, failsafes) that classifies findings as PASS/WARN/FAIL and infers probable crash cause.
+Developed automated PDF reporting with ReportLab and Matplotlib, rendering flight-path maps, sensor charts, and color-coded result tables.
+Designed a FastAPI backend with async file handling, XOR log decryption, and integration of a .NET converter via Mono + Xvfb inside a Dockerized Linux container.
+Containerized the full stack with Docker / Docker Compose for reproducible deployment.
+(Scale: ~7,200 lines of code, solo-built.)
+
+Skills you used
+Category	Skills
+Languages	Python, TypeScript, JavaScript
+Frontend	React 19, Vite, Tailwind CSS, Fetch API, DOM/blob handling
+Backend	FastAPI, Uvicorn (ASGI), REST API design, async/await, CORS, file uploads
+Data / parsing	Binary protocol parsing, struct, byte-level decoding, NumPy, data cleaning
+Reporting / viz	Matplotlib, ReportLab (PDF generation)
+Systems	Subprocess orchestration, Mono (.NET on Linux), Xvfb headless display, XOR crypto, temp-file lifecycle management
+DevOps	Docker, Docker Compose, Git
+Domain	Drone telemetry, ArduPilot/DataFlash logs, EKF/IMU/GPS diagnostics, agricultural drones
+What you should learn next
+To turn this into a portfolio-grade, production-ready project:
+
+Testing — there are no tests. Add pytest unit tests for the parsers (use small fixture logs) and httpx-based API tests. This is the single biggest gap.
+Async correctness — the heavy parsing runs synchronously inside an async endpoint, blocking the event loop. Learn run_in_executor / background workers (Celery, RQ, or FastAPI BackgroundTasks + a queue).
+Refactoring large modules — the two ~3,000-line files repeat a lot of logic. Learn to extract the shared parser/check framework into a common package (DRY, separation of concerns).
+CI/CD — add GitHub Actions / GitLab CI to run lint + tests + Docker build on every push.
+Cloud deployment — deploy it live (Render, Railway, Fly.io, or AWS ECS) so you can put a working URL on your resume.
+Type safety & validation — Pydantic models for responses, error schemas, and a typed API contract.
+Frontend polish — upload progress, error states, drag-and-drop, and maybe rendering the PDF inline.
+Security — input fuzzing on the parser (malformed binaries can crash it), rate limiting, and auth if it ever goes public.

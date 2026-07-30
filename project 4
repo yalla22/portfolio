@@ -1,0 +1,554 @@
+Marut Drones — Precision Landing on Moving Platform
+Complete Project Documentation
+1. Project Overview
+Goal
+Build an autonomous drone that can land precisely on an AprilTag marker placed on either:
+
+A stationary platform (proven and tested ✓)
+A moving ground rover (in development)
+Use Cases
+Drone delivery onto moving vehicles (defense, logistics)
+Autonomous drone recovery on USVs (boats)
+Static pad precision landing for charging/return-to-base
+Accuracy Target
+Stationary tag: ~5–10 cm
+Rover at 0.5 m/s: ~15–25 cm
+Rover at 1 m/s: ~25–40 cm
+2. Hardware Components
+Drone Subsystem
+Component	Model	Purpose
+Flight Controller	CubePilot CubeOrange Plus	ArduCopter 4.6.0-dev
+Companion Computer	Raspberry Pi 5 (8GB)	Runs precland.py
+Camera	Pi Camera OV5647 5MP	AprilTag detection (rolling shutter)
+Lens	2.8 mm CS-mount wide angle	~100° FOV
+GPS	Here4	Drone position
+Frame	Hexsoon EDU450	Hex frame
+Power	BEC 5V/5A → Pi	Independent Pi power
+Connection	USB cable Pi ↔ Cube	MAVLink at 115200 baud
+RC RX	TBS Crossfire / ELRS / similar	RC control + MAVLink backchannel
+Rover Subsystem
+Component	Model	Purpose
+Controller	Secondary Cube	ArduPilot Rover firmware
+GPS	Compatible GPS module	Rover position
+RC RX	Same family as drone	Drive control
+Marker	Printed AprilTag (tag36h11, ID 0, 39 cm)	Visual target
+Mount	Flat top deck, matte surface	Tag mounting
+Ground Station
+Component	Purpose
+Laptop	Mission Planner + MAVProxy
+2× RC TX (drone + rover)	Pilot/driver control + MAVLink monitoring
+3. System Architecture
+High-Level Diagram
+
+   ROVER                                     DRONE
+   ┌──────────────┐                         ┌──────────────────┐
+   │ Cube + GPS   │                         │ Cube ─USB─ Pi5   │
+   │ SYSID=2      │                         │ SYSID=1          │
+   │   │          │                         │   │              │
+   │ TELEM2─RC RX │                         │ TELEM2─RC RX     │
+   └──┼───────────┘                         └──┼───────────────┘
+      │ RC wireless                             │ RC wireless
+      ▼                                          ▼
+   Rover TX                                  Drone TX
+      │ USB                                     │ USB
+      └────────────────┬────────────────────────┘
+                       ▼
+               ┌──────────────────┐
+               │     LAPTOP       │
+               │  Mission Planner │
+               │  (monitor both)  │
+               └──────────────────┘
+Communication Architecture (Choose One)
+Option A: SiK Pair Drone↔Rover (Recommended for Production)
+
+Rover ── SiK ──≈≈≈── SiK ── Drone Cube ── USB ── Pi
+Latency: ~30 ms     |   Rover data flows directly to Pi
+Cost: ~₹3,000       |   No laptop in data path
+Option B: Laptop Forwards Rover via Drone RC TX (No SiK, All Physical)
+
+Rover → rover TX → Laptop (MAVProxy forward) → drone TX (uplink) → drone Cube → USB → Pi
+Latency: ~250 ms    |   No new hardware
+Cost: ₹0            |   Slower; OK for ≤0.5 m/s rover
+Option C: UDP from Laptop to Pi via WiFi
+
+Both Cubes → Laptop USB → MAVProxy → WiFi UDP → Pi
+Latency: ~80 ms     |   Requires WiFi link
+Note: Can be unreliable; WiFi can drop
+4. Software Stack
+Pi Side
+Component	Purpose
+Raspberry Pi OS 64-bit (Bookworm)	OS
+Python 3.13 (venv)	Runtime
+picamera2	Camera capture
+pupil-apriltags	Tag detection
+opencv-python	Image processing
+pymavlink	MAVLink protocol
+precland.service	Auto-start systemd unit
+Files on Pi
+File	Purpose
+~/precland.py	Main script
+~/config.py	Configuration
+~/calibration.json	Camera intrinsics
+/etc/systemd/system/precland.service	Auto-start
+Cube Firmware
+Drone: ArduCopter 4.6.0-dev
+Rover: ArduPilot Rover (latest stable)
+5. The precland.py Script
+State Machine
+
+┌─────────────────────────────────┐
+│         IDLE                    │
+│  Pilot in LOITER/STABILIZE      │
+│  Script just observes           │
+│  Sends LANDING_TARGET if tag    │
+└──────────┬──────────────────────┘
+           │ Pilot manually switches
+           │ to GUIDED mode
+           ▼
+┌─────────────────────────────────┐
+│       APPROACH                  │
+│  Script controls drone          │
+│  Three sub-modes:               │
+│    MODE A: VISUAL (tag seen)    │
+│    MODE B: GPS-NAV (rover GPS)  │
+│    MODE C: HOVER (nothing)      │
+└──────────┬──────────────────────┘
+           │ Touchdown detected
+           │ (alt < 0.3m, climb≈0, 1s)
+           ▼
+┌─────────────────────────────────┐
+│        LANDED                   │
+│  DISARM command sent            │
+│  → IDLE after disarm confirmed  │
+└─────────────────────────────────┘
+Three Navigation Modes Inside APPROACH
+MODE A — VISUAL (tag detected)
+
+vx = rover_velocity_x + Kp × angle_x
+vy = rover_velocity_y + Kp × angle_y
+vz = descent_visual(altitude, centered)
+Used when AprilTag is visible. Visual P-controller + rover velocity feed-forward.
+
+MODE B — GPS-NAV (no tag, rover GPS available)
+
+distance, bearing = haversine(drone.lat,lon, rover.lat,lon)
+vx_body, vy_body = rotate(velocity_toward_rover, drone.yaw)
+vz = descent_gps(distance, altitude)
+Used when drone is too far from rover for tag detection. Flies toward rover GPS.
+
+MODE C — HOVER (no tag, no rover)
+
+vx = vy = vz = 0
+Safety fallback. After 15 s: warns operator.
+
+Descent Profile
+Condition	vz (m/s)
+Altitude < 0.3 m (any mode)	0.6 (committed touchdown)
+Altitude < 5 m, tag centered (< 5°)	0.5 (terminal)
+Altitude < 5 m, tag off-center	0.1 (creep)
+Altitude > 5 m, tag visible, centered	0.3
+Altitude > 5 m, tag visible, off-center	0.2
+GPS-NAV, distance > 20 m	0.0 (hover, slide)
+GPS-NAV, distance 8–20 m	0.2
+GPS-NAV, distance < 8 m	0.3
+Touchdown Detection
+
+IF altitude < 0.3 m AND |climb_rate| < 0.10 m/s for 1 second:
+    Send force-disarm command (MAV_CMD_COMPONENT_ARM_DISARM with magic 21196)
+    State → LANDED
+Velocity Caps
+Horizontal: ±2 m/s
+Vertical: ±0.8 m/s
+Pilot Override
+At ANY point during APPROACH, pilot flipping RC switch out of GUIDED:
+
+Script detects mode change
+Stops sending commands
+Returns to IDLE
+Pilot has full RC control
+BENCH_MODE Safety Flag
+Set via environment variable BENCH=1. When active:
+
+vz forced to 0 (no descent)
+Touchdown auto-disarm disabled
+Banner printed at startup
+Log entries tagged [BENCH]
+6. Configuration Reference
+config.py (User-configurable)
+
+# Camera
+CAP_W, CAP_H    = 1296, 972
+FRAMERATE       = 30
+TAG_FAMILY      = "tag36h11"
+TAG_SIZE        = 0.39          # measured tag size in meters
+QUAD_DECIMATE   = 2.0
+CALIBRATED      = True
+FX, FY, CX, CY  = <from calibration.json>
+
+# MAVLink
+MAV_CONNECTION  = "/dev/ttyACM0"   # USB to drone Cube
+MAV_BAUD        = 115200
+TARGET_RATE_HZ  = 20
+
+# Axis correction
+FLIP_FWD        = False
+FLIP_RIGHT      = False
+SWAP_AXES       = False
+Tuning Constants in precland.py (class C)
+
+DRONE_SYSID         = 1
+ROVER_SYSID         = 2
+
+# Engagement
+CENTER_DEG          = 5.0
+ABORT_LOST_TIMEOUT  = 15.0
+ROVER_STALE_SEC     = 2.0
+
+# GPS navigation
+GPS_NAV_SPEED       = 2.0
+GPS_CLOSE_DIST      = 20.0
+GPS_VISUAL_DIST     = 8.0
+GPS_DECEL_DIST      = 3.0
+
+# Descent
+APPROACH_HEIGHT     = 5.0
+APPROACH_SPEED      = 0.3
+LAND_SPEED          = 0.5
+OFFCENTER_SPEED     = 0.10
+GPS_DESCENT_FAR     = 0.0
+GPS_DESCENT_MID     = 0.2
+GPS_DESCENT_NEAR    = 0.3
+
+# Touchdown
+TOUCHDOWN_ALT       = 0.30
+TOUCHDOWN_CLIMB     = 0.10
+TOUCHDOWN_TIME      = 1.0
+TOUCHDOWN_LAND_SPD  = 0.6
+
+# Control
+KP_XY               = 1.5
+MAX_VEL_XY          = 2.0
+MAX_VEL_Z           = 0.8
+Drone ArduCopter Parameters
+
+SYSID_THISMAV     = 1
+SERIAL1_PROTOCOL  = 2          (MAVLink2 on TELEM1 — if using SiK)
+SERIAL1_BAUD      = 57
+SERIAL2_PROTOCOL  = 2          (MAVLink2 on TELEM2 — for RC RX backchannel)
+SERIAL2_BAUD      = 57
+SR1_POSITION      = 5
+SR2_POSITION      = 5
+PLND_ENABLED      = 1
+PLND_TYPE         = 1
+PLND_EST_TYPE     = 0
+GUID_TIMEOUT      = 3
+WPNAV_SPEED       = 200
+WPNAV_SPEED_DN    = 100
+Rover ArduPilot Parameters
+
+SYSID_THISMAV     = 2
+SERIAL1_PROTOCOL  = 2          (for SiK if used)
+SERIAL1_BAUD      = 57
+SERIAL2_PROTOCOL  = 2          (for RC RX backchannel)
+SERIAL2_BAUD      = 57
+SR1_POSITION      = 5
+SR2_POSITION      = 5
+GPS_TYPE          = 1
+7. MAVLink Protocol
+Messages Sent by Pi → Drone Cube
+Message	Rate	Purpose
+LANDING_TARGET	20 Hz	Visual angle to tag
+SET_POSITION_TARGET_LOCAL_NED	30 Hz	Velocity commands
+COMMAND_LONG (DO_SET_MODE)	as needed	Mode changes
+COMMAND_LONG (ARM_DISARM)	one-shot	Touchdown disarm
+HEARTBEAT	1 Hz	Pi alive signal (comp=191)
+Messages Read by Pi
+Message	Source	Field used
+HEARTBEAT (sysid=1, comp=1)	Drone autopilot	armed, mode
+ATTITUDE (sysid=1, comp=1)	Drone autopilot	yaw
+VFR_HUD (sysid=1, comp=1)	Drone autopilot	altitude, climb_rate
+GLOBAL_POSITION_INT (sysid=1)	Drone autopilot	lat, lon (for GPS-NAV)
+GLOBAL_POSITION_INT (sysid=2)	Rover	lat, lon, vx, vy, vz
+LANDING_TARGET Payload
+
+time_usec      : microseconds since epoch
+target_num     : 0
+frame          : MAV_FRAME_BODY_FRD (12)
+angle_x        : atan2(forward, distance) — radians
+angle_y        : atan2(right, distance) — radians
+distance       : 3D distance to tag — meters
+8. Installation Procedure
+Step 1: Raspberry Pi Setup
+
+# Install system packages
+sudo apt update
+sudo apt install -y python3-picamera2 python3-opencv python3-numpy git
+
+# Create Python venv with system packages
+python3 -m venv --system-site-packages ~/precland
+source ~/precland/bin/activate
+
+# Install Pi-side packages
+pip install pupil-apriltags pymavlink
+
+# Add user to dialout group
+sudo usermod -aG dialout marut
+
+# Enable serial port if using UART
+sudo raspi-config nonint do_serial_hw 0
+Step 2: Camera Calibration
+
+source ~/precland/bin/activate
+python ~/calibrate.py    # uses checkerboard
+# Verify RMS reprojection error < 0.5
+Step 3: Print AprilTag
+
+python ~/make_tag.py 0   # generates tag36h11_0.png
+# Print at 100% scale on matte paper
+# Measure black square edge with ruler
+# Set TAG_SIZE in config.py to measured value (in meters)
+Step 4: Install systemd Service
+
+sudo cp ~/precland.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now precland.service
+Step 5: Configure Cubes
+Load marut_drone.parm on drone Cube
+Load marut_rover.parm on rover Cube
+Reboot both
+Step 6: Set Up Communication (SiK or RC TX backchannel)
+Wire radios to TELEM ports
+Pair SiK radios in Mission Planner (if using SiK)
+Enable MAVLink mode on RC TXs (if using backchannel)
+9. Operation Procedures
+Pre-Flight Checklist
+
+☐ Battery charged (drone + rover)
+☐ Calibration.json present on Pi
+☐ AprilTag printed and mounted flat on rover
+☐ Mission Planner sees both vehicles
+☐ Drone GPS lock obtained
+☐ Rover GPS lock obtained
+☐ Pi logs show rover=True
+☐ Pre-arm checks pass on drone
+☐ Safety pilot briefed
+☐ RC mode switch positioned at LOITER
+☐ Open area, no people
+Boot Sequence
+
+T=0       Battery plugged → Cubes start booting
+T=5       SiK radios link (if used)
+T=10      Pi boots Linux
+T=30      precland.service starts
+T=40      Script initialized; "Moving-platform precision landing — pilot-engaged via GUIDED"
+T=45      Mission Planner sees both vehicles
+T=50      rover=True visible in Pi log
+T=60+     Ready to arm
+Flight Sequence
+
+1. Pilot arms drone in LOITER
+2. Take off, climb to ~5 m
+3. Position drone roughly above rover (or near rover)
+4. Release sticks → LOITER holds position
+5. PILOT: Flip RC switch to GUIDED ← engagement
+6. Script logs ">>> Pilot engaged GUIDED — script taking over"
+7. Script computes vx, vy, vz commands
+   - MODE A if tag visible: visual + rover velocity FF
+   - MODE B if no tag, rover GPS available: fly toward rover
+   - MODE C if nothing: hover
+8. Drone autonomously approaches and descends
+9. Touchdown detected → auto-disarm
+Abort
+At any time during APPROACH:
+
+Pilot RC switch to LOITER/POSHOLD/RTL
+Script returns to IDLE
+Pilot has full RC control
+10. Bench Testing
+BENCH_MODE Setup
+
+# Run in bench mode
+BENCH=1 python3 ~/precland.py
+Bench Test Levels
+Level 1: State Machine (no rover)
+Verify IDLE → APPROACH transition on GUIDED switch
+Verify MAVLink commands generated
+Verify mode override returns to IDLE
+Level 2: Rover Data Flow
+Power rover Cube
+Verify rover=True in Pi log
+Move rover physically → verify vN/vE update
+Level 3: Touchdown Simulation
+
+# Patch in main loop:
+import os
+fake = os.environ.get('FAKE_ALT')
+if fake:
+    drone.altitude_m = float(fake)
+    drone.climb_rate = 0.0
+
+FAKE_ALT=5.0 python3 precland.py
+Hardware Setup for Bench
+
+☐ Props REMOVED from drone
+☐ Drone strapped to heavy box / table
+☐ Camera pointed down at floor (or held tag)
+☐ Pi USB to drone Cube
+☐ Mission Planner connected
+☐ Power-on sequence completed
+☐ Stopped precland.service: sudo systemctl stop precland.service
+☐ Run manually: BENCH=1 python3 ~/precland.py
+11. Safety Features
+Built-in Safety
+Feature	Behavior
+Pilot mode override	RC switch out of GUIDED → script stops immediately
+GUID_TIMEOUT (3s)	Drone hovers if Pi script crashes
+ABORT_LOST_TIMEOUT (15s)	Hover/warn if tag and rover both lost
+Velocity caps	All commands clamped to ±2 m/s XY, ±0.8 m/s Z
+Force-disarm on touchdown	Uses magic number 21196 to bypass safety
+BENCH_MODE	Hover-only mode for bench testing
+Hard Operational Rules
+
+1. Safety pilot ALWAYS present with finger on RC mode switch
+2. Test progressively: stationary → walking → 0.5 m/s → 1 m/s
+3. Open area minimum 20 m radius, no people, no obstacles
+4. Verify axis signs (FLIP_FWD/RIGHT/SWAP_AXES) on bench before flight
+5. Battery > 70% for landing tests
+6. Camera focus locked mechanically
+12. Troubleshooting
+Symptom	Cause	Fix
+"Waiting for heartbeat..." hang	Wrong device, wrong baud	Check ls /dev/ttyACM*, verify baud=115200
+precland.service crash loop	Python exception	journalctl -u precland.service -n 50
+raw_dets = 0	Camera focus, print quality	Re-focus lens, reprint matte
+rover=False always	Rover SYSID wrong, link broken	Set SYSID=2, check SiK/RC link
+armed=False blocks trigger	Safety gate working as designed	Force-arm in MP (props off) for bench
+Drone oscillates near tag	KP_XY too high or latency	Lower KP_XY to 0.8 or 1.0
+Mode flickers in HUD	Multiple component HEARTBEATs	Already filtered (comp=1 only)
+Mission Planner shows two sys=1 entries	Rover SYSID not set	Change rover SYSID_THISMAV=2
+Pose estimation ambiguous near landing	IPPE-square ambiguity	Add IPPE_SQUARE pose solver
+Tag too small to detect at altitude	Tag size vs distance	Add nested tag bundle
+Glare blows out detection	Glossy print	Use matte print spec
+LANDING_TARGET arrives late	Wrong time_usec	Use actual capture timestamp
+13. Recommended Improvements (from 110-agent analysis)
+Quick Wins (Do This Week)
+Cap exposure to 2 ms — disable AE/AWB to fix rolling-shutter blur
+Set ArduPilot param bundle — PLND/FS/FENCE/EK3/BATT params
+Stable USB symlink — use /dev/serial/by-id/... instead of /dev/ttyACM0
+LANDING_TARGET timestamp — use actual capture time, not now()
+ID whitelist + decision_margin gate + 3-tap median — reject outliers
+Outdoor matte print spec — prevents sun-glare failures
+NAMED_VALUE_FLOAT telemetry — live precland state in MP
+Must Have Before Production
+Two-layer software watchdog — systemd + in-process heartbeat
+Multi-tier nested AprilTag bundle — 40 + 12 + 3 cm tags
+Pose ambiguity rejection — cv2.solvePnPGeneric IPPE_SQUARE
+Pre-flight Precland Readiness Gate — 8 health checks
+Flight ring-buffer logger — frames + JSONL for replay/debrief
+Medium-Term Roadmap
+Unit + integration test harness
+Lua precland_gate.lua on Cube
+Touchdown abort + retry logic
+ArduPilot AUTO mission chaining
+Log-replay perception harness
+Wind-saturation abort via lean-angle vs ANGLE_MAX
+14. Project Timeline
+
+PHASE 1 — DONE
+☑ Hardware procurement (Cube, Pi, camera)
+☑ Camera setup and calibration
+☑ AprilTag detection on Pi
+☑ MAVLink connection to Cube
+☑ LANDING_TARGET messages flowing
+☑ Successful stationary-tag precision landing flight
+
+PHASE 2 — IN PROGRESS
+☑ Moving-platform script architecture (state machine, 3 modes)
+☑ GPS-NAV mode for long-range approach
+☑ Visual mode with rover velocity feed-forward
+☑ Touchdown detection and auto-disarm
+☑ BENCH_MODE for safe testing
+☑ Mission Planner multi-vehicle setup
+☐ Bench test verification of all modes
+☐ Rover data path validation
+☐ Tuning (KP_XY, descent rates)
+
+PHASE 3 — UPCOMING
+☐ First moving-rover flight (stationary rover, then walking, then 0.5 m/s)
+☐ Production safety features (watchdog, readiness gate)
+☐ Flight logging + replay harness
+☐ Camera improvements (exposure tuning, matte print)
+☐ Nested AprilTag bundle for low-altitude
+☐ Field deployment for defense use case
+15. Quick Reference
+Common Commands
+
+# Service control
+sudo systemctl status precland.service
+sudo systemctl restart precland.service
+sudo systemctl stop precland.service
+sudo systemctl start precland.service
+
+# Logs
+journalctl -u precland.service -f
+journalctl -u precland.service -n 100 --no-pager
+
+# Manual run for bench test
+sudo systemctl stop precland.service
+BENCH=1 python3 ~/precland.py
+
+# Check Cube USB
+ls /dev/ttyACM*
+lsusb
+
+# Pi diagnostics
+vcgencmd measure_temp
+vcgencmd get_throttled
+df -h
+Diagnostic Script: Check MAVLink Messages on Pi
+
+from pymavlink import mavutil
+import time
+m = mavutil.mavlink_connection('/dev/ttyACM0', baud=115200)
+end = time.time() + 10
+sysids = set()
+while time.time() < end:
+    msg = m.recv_match(blocking=False)
+    if msg:
+        sysids.add(msg.get_srcSystem())
+print(f'Systems seen: {sysids}')
+# Expect {1, 2} if rover data flowing
+16. Key Decisions Made
+Decision	Choice	Reason
+Marker type	AprilTag tag36h11	Proven, robust, well-supported library
+Compute platform	Raspberry Pi 5	Sufficient for AprilTag (no ML), cheap, light
+Engagement	Pilot manually triggers GUIDED	Safety — never script-initiated mode change
+Architecture	Lua-style — script controls in GUIDED until touchdown	Avoids ArduPilot LAND mode rigidity for moving platforms
+Sensor data	Camera only currently; LiDAR TBD	Minimal MVP first
+Camera	OV5647 5MP rolling shutter	Available now; GS planned
+Rover comms	TBD (SiK pair vs RC TX backchannel)	Trade latency vs cost
+Bench safety	BENCH=1 env variable	Force hover, disable disarm
+17. Project Files Inventory
+
+/home/marut/
+├── precland.py              # Main script
+├── config.py                # Config constants
+├── calibration.json         # Camera intrinsics
+├── make_tag.py              # AprilTag print generator
+├── calibrate.py             # Camera calibration tool
+├── livecam.py               # Browser MJPEG debug viewer
+└── precland/                # Python venv
+
+/etc/systemd/system/
+└── precland.service         # Auto-start unit
+
+/var/log/precland/           # (future) Flight logs
+18. Contact and Project Information
+Field	Value
+Project	Marut Drones — Autonomous Precision Landing on Moving Platform
+Engineer	Dheeraj (dheeraj@marutdrones.com)
+Date	2026-06-09
+Version	2.0 (moving platform)
+Classification	Internal Engineering
+Hardware test	Stationary tag landing PROVEN ✓
+Hardware test	Moving rover landing IN BENCH TESTING
+This is the complete project document. Want me to save it as a markdown file on your Windows machine (e.g., C:\Users\yalla\precland_project_documentation.md) so you have a permanent reference? Or break it into separate files (architecture / operation manual / troubleshooting / improvement roadmap)?

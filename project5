@@ -1,0 +1,50 @@
+What you actually built
+This is the Marut Survey Platform backend — a FastAPI geospatial system for drone survey data. Your contributions cluster into three areas: AI/ML detection features, backend API endpoints, and deployment/infra. (UI changes live in a separate frontend repo, so I can only verify the backend here — I'll flag that below.)
+
+1. AI detection features (the headline work)
+You shipped three production AI detection pipelines that run on aerial drone imagery (GeoTIFF orthomosaics):
+
+Feature	Model / Technique	Your commits
+Stockpile detection & volume	SAM-2 (Segment Anything 2) segmentation + DSM/DTM elevation to compute stockpile volume; supports detection on a user-selected area; cancellable jobs	stockpile_detection_service.py, 7d78501, 053b7e1, d58c2bc
+Tree detection	DeepForest crown detector + HSV green-filtering, NMS dedup, DSM/DTM height check to reject grass/shrubs	tree_detection_service.py, 5900233
+Building detection	LangSAM (GroundingDINO + SAM) text-prompted segmentation, block-tiling, vegetation/shape filtering, roof-vs-ground height check	building_detection_service.py, 5900233
+Key engineering details you implemented:
+
+Streaming cloud-optimized GeoTIFFs (COGs) directly from S3 via GDAL /vsis3/ + rasterio — no full-file download. See detection_common.py.
+Geospatial correctness: pixel-area-to-square-meters conversion handling both projected and geographic CRS; tiling large rasters into overlapping windows; converting pixel detections back to geo-coordinates.
+Classical CV post-processing: OpenCV HSV color filtering, contour extraction, Non-Max Suppression to dedupe overlapping detections across tiles.
+Shared service refactor: extracted common S3/GDAL/raster helpers into detection_common.py so each detector stays focused on its algorithm.
+2. Backend API endpoints
+Built REST endpoints for each detector (tree_detection.py, building_detection.py, stockpile_detection.py) following an async job pattern: POST /detect enqueues a Celery task and returns a task ID; client polls a status endpoint; results returned when ready.
+Celery + Redis background task orchestration with per-task progress callbacks (tree_tasks.py, building_tasks.py, stockpile_tasks.py) and dedicated task queues.
+Task ownership & RBAC: stored task owner in Redis and enforced owner-or-admin access; reused shared auth/collection-access dependencies (detection.py).
+Pydantic v2 schemas for request/response validation (tree.py, building.py, stockpile.py).
+Alembic migrations adding new AssetType enum values for detection outputs; added an order_types enum (7e47aa0).
+3. Deployment & infra
+Wrote the Dockerfile and managed ML dependency packaging (requirements-ml.txt): PyTorch, SAM-2 from GitHub, DeepForest, GroundingDINO, segment-geospatial — including pinning transformers<4.40 to resolve a real dependency break.
+Configured GitHub Actions prod-deploy workflow and a systemd Celery worker service unit.
+Debugged ML-on-prod issues (CUDA PyTorch install, failed migrations, GPU vs CPU worker setup).
+Resume bullet points (copy-ready)
+Backend & AI Engineer — Marut Survey Platform
+
+Built three production computer-vision detection pipelines (stockpile volume, tree-crown, and building detection) on drone aerial imagery using SAM-2, DeepForest, and GroundingDINO, integrated into a FastAPI backend.
+Engineered geospatial raster processing that streams cloud-optimized GeoTIFFs directly from S3 via GDAL/rasterio, with CRS-aware area computation, tiled inference, and DSM/DTM elevation analysis for volume/height estimation.
+Designed asynchronous detection APIs using Celery + Redis with job queuing, live progress, cancellation, and role-based access control.
+Implemented OpenCV post-processing (HSV filtering, contour extraction, Non-Max Suppression) to improve detection precision across tiled outputs.
+Owned Dockerization, ML dependency packaging, GitHub Actions CI/CD, and systemd worker deployment for GPU/CPU ML workloads.
+Skills you used (for the skills section)
+Languages/Frameworks: Python, FastAPI, SQLAlchemy 2.0, Pydantic
+AI/ML & CV: PyTorch, SAM-2, DeepForest, GroundingDINO/LangSAM, OpenCV, NumPy
+Geospatial: GDAL, rasterio, GeoTIFF/COG, PostGIS, CRS/projections, DSM/DTM elevation models
+Backend/Infra: Celery, Redis, PostgreSQL, S3/MinIO, Alembic, REST API design, JWT/RBAC
+DevOps: Docker, GitHub Actions, systemd, Linux deployment, dependency management
+What you should learn next
+Honest gaps based on what the code shows:
+
+Automated testing — the repo has no tests (CLAUDE.md notes "not yet implemented"). Learn pytest, FastAPI's TestClient, and mocking S3/Celery. This is the single biggest credibility gap for a backend engineer.
+ML model serving & optimization — you're loading heavy models (SAM-2/DeepForest) per task. Learn model warm-loading, batching, GPU memory management, and tools like TorchServe / Triton / ONNX Runtime.
+Async Python depth — your endpoints are sync (def, not async def). Learn async/await, when it helps, and async SQLAlchemy.
+Observability — structured logging, metrics (Prometheus/Grafana), and distributed tracing for long-running Celery jobs.
+MLOps — model versioning/registries (MLflow), reproducible inference, and evaluating detection accuracy (precision/recall/mAP) rather than relying on heuristic filters.
+Infra-as-code — you used systemd + manual deploy scripts; learning Kubernetes or at least docker-compose orchestration for the worker fleet would round this out.
+One note: your message mentioned UI changes, but this repo is backend-only — your commits here are all backend/ML. If you want me to document the UI work too, point me at the frontend repo and I'll do the same breakdown there. Want me to tailor these bullets to a specific role (e.g., ML Engineer vs. Backend Engineer)

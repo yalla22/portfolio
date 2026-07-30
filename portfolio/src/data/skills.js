@@ -1,0 +1,163 @@
+// Grouped capability matrix. `proficiency` (0–100) drives the animated
+// ProficiencyMeter headline bar on each SkillCard.
+export const skillGroups = [
+  {
+    id: "languages",
+    label: "Languages",
+    proficiency: 90,
+    items: ["Python", "TypeScript", "JavaScript", "C", "SQL"],
+  },
+  {
+    id: "cv-ml",
+    label: "Computer Vision / ML",
+    proficiency: 88,
+    items: [
+      "PyTorch",
+      "Hugging Face Transformers",
+      "SegFormer",
+      "SAM / SAM-2",
+      "DeepForest",
+      "GroundingDINO / LangSAM",
+      "CLIP",
+      "OpenCV",
+      "TensorFlow",
+      "scikit-learn",
+      "CUDA / GPU",
+    ],
+  },
+  {
+    id: "geospatial",
+    label: "Geospatial",
+    proficiency: 85,
+    items: [
+      "rasterio",
+      "GDAL",
+      "GeoTIFF / COG",
+      "DSM / DTM & CHM",
+      "GeoJSON",
+      "CRS / projections",
+      "/vsis3 streaming",
+      "OpenLayers",
+      "PostGIS",
+    ],
+  },
+  {
+    id: "robotics",
+    label: "Drone / Robotics",
+    proficiency: 80,
+    items: [
+      "ArduPilot / ArduCopter",
+      "MAVLink / pymavlink",
+      "CubeOrange",
+      "Raspberry Pi 5",
+      "picamera2",
+      "AprilTag",
+      "State machines",
+      "P-control",
+    ],
+  },
+  {
+    id: "backend",
+    label: "Backend / Distributed",
+    proficiency: 88,
+    items: [
+      "FastAPI",
+      "Uvicorn (ASGI)",
+      "Celery",
+      "Redis",
+      "PostgreSQL / PostGIS",
+      "SQLAlchemy 2.0",
+      "Pydantic v2",
+      "Alembic",
+      "REST APIs",
+      "RBAC / JWT",
+    ],
+  },
+  {
+    id: "frontend",
+    label: "Frontend",
+    proficiency: 78,
+    items: [
+      "React 18/19",
+      "Vite",
+      "Tailwind CSS",
+      "HTML",
+      "CSS",
+      "Fetch API",
+      "Zustand",
+      "shadcn/ui",
+      "React Router",
+      "Service Workers",
+    ],
+  },
+  {
+    id: "devops",
+    label: "DevOps / Systems",
+    proficiency: 80,
+    items: [
+      "Docker",
+      "Docker Compose",
+      "GitHub Actions CI/CD",
+      "systemd",
+      "Linux",
+      "S3 (AWS / Wasabi) / MinIO",
+      "Git",
+    ],
+  },
+];
+
+// Hub-and-spoke graph for the EcosystemDiagram (Stack section) and the
+// ProofMarquee tech ribbon. `center` is the hub; `nodes` are the domains.
+export const ecosystem = {
+  center: "Drone & Geospatial AI",
+  nodes: [
+    {
+      id: "cv",
+      label: "Computer Vision",
+      items: ["PyTorch", "SegFormer", "SAM-2", "DeepForest", "LangSAM", "OpenCV"],
+    },
+    {
+      id: "geo",
+      label: "Geospatial",
+      items: ["OpenLayers", "PostGIS", "rasterio", "GDAL", "GeoTIFF/COG", "GeoJSON"],
+    },
+    {
+      id: "backend",
+      label: "Backend",
+      items: ["FastAPI", "Celery", "Redis", "PostgreSQL", "Docker", "GitHub Actions"],
+    },
+    {
+      id: "robotics",
+      label: "Robotics",
+      items: ["ArduPilot", "MAVLink", "Raspberry Pi", "AprilTag"],
+    },
+  ],
+};
+
+// Flat keyword ribbon for the ProofMarquee ticker (full tech ecosystem).
+export const marqueeTech = [
+  "Python",
+  "TypeScript",
+  "PyTorch",
+  "SAM-2",
+  "DeepForest",
+  "GroundingDINO / LangSAM",
+  "SegFormer",
+  "OpenCV",
+  "FastAPI",
+  "Celery",
+  "Redis",
+  "PostgreSQL",
+  "PostGIS",
+  "Docker",
+  "GitHub Actions",
+  "rasterio",
+  "GDAL",
+  "OpenLayers",
+  "ArduPilot",
+  "MAVLink",
+  "Raspberry Pi",
+  "AprilTag",
+  "React",
+  "Zustand",
+];

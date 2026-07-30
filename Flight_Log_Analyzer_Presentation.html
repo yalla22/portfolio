@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Flight Log Analyzer — Project Documentation · Janadri Yalla Yashwanth</title>
+<style>
+  :root{
+    --bg:#0a0d13; --panel:#121824; --panel2:#0f141e; --line:#222c3c;
+    --text:#e7edf5; --muted:#93a1b5; --faint:#5f6c7e;
+    --accent:#38bdf8; --accent2:#818cf8;
+    --green:#34d399; --amber:#fbbf24; --red:#fb7185;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;font-family:var(--sans);background:var(--bg);color:var(--text);
+    line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px}
+  h1,h2,h3{line-height:1.15;letter-spacing:-.02em;margin:0}
+  code,.mono{font-family:var(--mono)}
+
+  /* progress + nav */
+  #bar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:100;transition:width .1s}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;backdrop-filter:blur(10px);
+    background:rgba(10,13,19,.72);border-bottom:1px solid transparent;transition:border-color .3s}
+  nav.scrolled{border-bottom-color:var(--line)}
+  nav .inner{max-width:1000px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  nav .brand{font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--text)}
+  nav .brand b{color:var(--accent)}
+  nav .links{display:flex;gap:20px;font-size:13px;color:var(--muted)}
+  nav .links a{color:var(--muted);transition:color .2s}
+  nav .links a:hover{color:var(--text)}
+  @media(max-width:720px){nav .links{display:none}}
+
+  /* hero */
+  header.hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden;padding:120px 0 80px}
+  .hero-bg{position:absolute;inset:0;z-index:0;opacity:.9}
+  .grid-lines{position:absolute;inset:0;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:48px 48px;mask-image:radial-gradient(ellipse 80% 60% at 60% 40%,#000 30%,transparent 75%);opacity:.35}
+  .glow{position:absolute;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:.20}
+  .glow.a{background:var(--accent);top:-160px;right:-120px}
+  .glow.b{background:var(--accent2);bottom:-200px;left:-160px}
+  .hero-inner{position:relative;z-index:1}
+  .eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+  header.hero h1{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;margin:16px 0 10px}
+  .subtitle{font-size:clamp(1.05rem,2.4vw,1.5rem);color:var(--text);font-weight:600;max-width:24ch;margin-bottom:14px}
+  .lede{color:var(--muted);max-width:62ch;font-size:1.05rem}
+  .author{margin-top:22px;font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .author b{color:var(--text)}
+  .flightpath{position:absolute;inset:0;z-index:0}
+  .fp-line{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:1600;stroke-dashoffset:1600;opacity:.5;animation:draw 4s ease forwards .3s}
+  .fp-node{offset-path:path("M40,560 L200,560 L200,440 L360,440 L360,560 L520,560 L520,300 L680,300 L680,480 L900,480");
+    offset-distance:0%;animation:ride 9s linear infinite 1s}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @keyframes ride{to{offset-distance:100%}}
+
+  /* sections */
+  section{padding:72px 0;border-top:1px solid var(--line)}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  section h2{font-size:clamp(1.5rem,3.5vw,2.2rem);font-weight:800;margin-bottom:18px}
+  p.body{color:var(--muted);max-width:70ch;margin:0 0 14px}
+  .panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:22px}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+
+  /* stat tiles */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:8px}
+  @media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .stat .num{font-size:2rem;font-weight:800;font-family:var(--mono);color:var(--text)}
+  .stat .num .u{color:var(--accent)}
+  .stat .lbl{font-size:12.5px;color:var(--muted);margin-top:4px}
+
+  /* architecture flow */
+  .flow{display:flex;flex-direction:column;gap:12px}
+  .node{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;position:relative}
+  .node .t{font-weight:700}.node .d{color:var(--muted);font-size:14px;margin-top:2px}
+  .node .tag{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.06em}
+  .arrow{align-self:center;width:2px;height:22px;background:linear-gradient(var(--accent),transparent);position:relative}
+  .arrow::after{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--accent)}
+
+  /* pipeline (animated) */
+  .pipe{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin-top:6px}
+  .pstep{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;position:relative}
+  .pstep .n{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .pstep .h{font-weight:700;margin-top:2px}
+  .pstep .s{color:var(--muted);font-size:13px;margin-top:4px}
+  .pconn{align-self:center;min-width:34px;height:3px;background:linear-gradient(90deg,var(--line),var(--line));border-radius:2px;position:relative;overflow:hidden}
+  .pconn::after{content:"";position:absolute;inset:0;width:40%;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:flow 2.2s linear infinite}
+  @keyframes flow{from{transform:translateX(-100%)}to{transform:translateX(320%)}}
+  @media(max-width:720px){.pconn{display:none}.pstep{min-width:100%}}
+
+  /* xor */
+  .xor{display:grid;gap:10px;font-family:var(--mono);margin-top:6px}
+  .byterow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .byterow .lab{min-width:150px;color:var(--muted);font-family:var(--sans);font-size:13px}
+  .byte{display:inline-grid;place-items:center;min-width:58px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel);font-weight:700}
+  .byte.enc{color:var(--amber);border-color:#3a2f14}
+  .byte.key{color:var(--accent);border-color:#123040}
+  .byte.dec{color:var(--green);border-color:#123a2c;opacity:0;transform:scale(.8);transition:all .5s}
+  .xor.in .byte.dec{opacity:1;transform:none}
+  .xor.in .byte.dec.b2{transition-delay:.25s}
+  .xnote{font-family:var(--sans);color:var(--muted);font-size:13px;margin-top:2px}
+  .op{color:var(--faint);font-weight:700}
+
+  /* decision tree */
+  .tree{display:grid;gap:10px}
+  .branch{display:flex;gap:12px;align-items:flex-start}
+  .branch .cond{font-family:var(--mono);font-size:13px;color:var(--accent);min-width:190px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+  .branch .res{color:var(--muted);font-size:14px;padding-top:8px}
+
+  /* check engine */
+  .cats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+  @media(max-width:720px){.cats{grid-template-columns:1fr}}
+  .cat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .cat h4{margin:0 0 8px;font-size:14px;letter-spacing:.02em}
+  .cat ul{margin:0;padding-left:16px;color:var(--muted);font-size:13px}
+  .cat li{margin:3px 0}
+  .chips{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--line)}
+  .chip.pass{color:var(--green);border-color:#123a2c;background:#0e1c17}
+  .chip.warn{color:var(--amber);border-color:#3a2f14;background:#1c1710}
+  .chip.fail{color:var(--red);border-color:#3a1620;background:#1c1014}
+
+  /* challenges */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.cards{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card .p{color:var(--red);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  .card .s{color:var(--green);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-top:10px}
+  .card h4{margin:6px 0}
+  .card p{margin:2px 0;color:var(--muted);font-size:14px}
+
+  /* tech stack */
+  .stack{display:flex;flex-wrap:wrap;gap:8px}
+  .tech{font-family:var(--mono);font-size:12.5px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text)}
+
+  pre{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-family:var(--mono);font-size:13px;color:#cdd7e3}
+  .hl{color:var(--accent)} .hlg{color:var(--green)} .ha{color:var(--amber)}
+
+  /* interview-prep additions */
+  .divider{padding:64px 0 4px;text-align:center;border-top:1px solid var(--line)}
+  .divider .part{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+  .divider h2{font-size:clamp(1.7rem,4.4vw,2.6rem);margin-top:10px}
+  .divider p{color:var(--muted);max-width:60ch;margin:10px auto 0}
+  .script{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:16px 18px;color:var(--text);font-size:15px;line-height:1.75}
+  .script.short{border-left-color:var(--accent2)}
+  .qa{border-left:2px solid var(--accent);padding:2px 0 2px 16px;margin:0 0 16px}
+  .qa .q{font-weight:700;color:var(--text)}
+  .qa .a{color:var(--muted);font-size:14.5px;margin-top:4px}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+  @media(max-width:720px){.steps{grid-template-columns:1fr}}
+  .step2{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;position:relative}
+  .step2 .k{font-family:var(--mono);font-size:20px;font-weight:800;color:var(--accent)}
+  .step2 .h{font-weight:700;margin-top:2px}
+  .step2 .s{color:var(--muted);font-size:13px;margin-top:4px}
+  .msgtbl{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+  .msgtbl th,.msgtbl td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  .msgtbl th{color:var(--faint);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  .msgtbl td.m{font-family:var(--mono);color:var(--accent);white-space:nowrap}
+  .msgtbl td.d{color:var(--muted)}
+  .numgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px}
+  @media(max-width:720px){.numgrid{grid-template-columns:1fr}}
+  .numitem{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .numitem b{font-family:var(--mono);color:var(--text)} .numitem span{color:var(--muted);font-size:13px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media(max-width:720px){.two{grid-template-columns:1fr}}
+  .two h4{margin:0 0 8px} .two ul{margin:0;padding-left:16px;color:var(--muted);font-size:14px} .two li{margin:5px 0}
+  footer{padding:48px 0 60px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;text-align:center}
+  footer .mono{color:var(--faint)}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<nav id="nav"><div class="inner">
+  <div class="brand"><b>◦</b> Flight Log Analyzer</div>
+  <div class="links">
+    <a href="#arch">Project</a><a href="#xor">XOR</a><a href="#engine">Checks</a>
+    <a href="#intro">Intro</a><a href="#method">Method</a><a href="#qa">Q&amp;A</a>
+  </div>
+</div></nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-bg">
+    <div class="grid-lines"></div>
+    <div class="glow a"></div><div class="glow b"></div>
+    <svg class="flightpath" viewBox="0 0 960 640" preserveAspectRatio="xMidYMid slice">
+      <path class="fp-line" d="M40,560 L200,560 L200,440 L360,440 L360,560 L520,560 L520,300 L680,300 L680,480 L900,480"/>
+      <circle class="fp-node" r="5" fill="#38bdf8"/>
+    </svg>
+  </div>
+  <div class="wrap hero-inner">
+    <div class="eyebrow reveal in">Project Documentation · Drone Flight Data</div>
+    <h1 class="reveal in d1">Flight Log Analyzer</h1>
+    <div class="subtitle reveal in d2">Automated crash &amp; health diagnostics for two drone log ecosystems.</div>
+    <p class="lede reveal in d3">A full-stack tool that ingests raw flight logs from <b>Pixhawk/ArduPilot</b> and <b>JIYI K++</b> controllers — decrypting, converting, and running a two-phase <b>~30-check</b> engine to generate a professional PDF diagnostics report that surfaces probable failure causes.</p>
+    <div class="author reveal in d4"><b>Janadri Yalla Yashwanth</b> · Software Engineer, Marut Drones · solo-built, ~7,200 lines</div>
+  </div>
+</header>
+
+<!-- OVERVIEW / STATS -->
+<section id="overview"><div class="wrap">
+  <div class="kicker reveal">Overview</div>
+  <h2 class="reveal">One tool, two flight-controller worlds</h2>
+  <p class="body reveal">Drone crash investigation usually means manually plotting huge binary logs for hours. Different flight controllers use different — and sometimes <b>encrypted</b> — formats. This tool auto-detects the format, normalizes it, and produces a consistent, color-coded diagnosis in seconds.</p>
+  <div class="stats">
+    <div class="stat reveal"><div class="num" data-to="2"></div><div class="lbl">Log ecosystems (ArduPilot + JIYI)</div></div>
+    <div class="stat reveal d1"><div class="num" data-to="30" data-suffix="+"></div><div class="lbl">Automated health checks</div></div>
+    <div class="stat reveal d2"><div class="num" data-to="50" data-suffix="+"></div><div class="lbl">Binary message types decoded</div></div>
+    <div class="stat reveal d3"><div class="num" data-to="7200" data-suffix=""></div><div class="lbl">Lines of code (solo-built)</div></div>
+  </div>
+</div></section>
+
+<!-- ARCHITECTURE -->
+<section id="arch"><div class="wrap">
+  <div class="kicker reveal">Solution &amp; Architecture</div>
+  <h2 class="reveal">From upload to diagnosis</h2>
+  <div class="flow" style="margin-top:18px">
+    <div class="node reveal"><span class="tag">FRONTEND</span><div class="t">React + TypeScript + Vite + Tailwind</div><div class="d">Upload a <code>.bin</code>/<code>.log</code> → receive a downloadable PDF report.</div></div>
+    <div class="arrow reveal"></div>
+    <div class="node reveal d1"><span class="tag">API · FastAPI</span><div class="t">POST /analyze</div><div class="d">Extension allow-list + 500 MB cap, then format detection.</div></div>
+    <div class="arrow reveal d1"></div>
+    <div class="node reveal d2"><span class="tag">DETECT + ROUTE</span><div class="t">Magic-byte format detection</div><div class="d">ArduPilot → parse directly · JIYI text → parse · JIYI binary → decrypt → convert → parse.</div></div>
+    <div class="arrow reveal d2"></div>
+    <div class="node reveal d3"><span class="tag">REPORT</span><div class="t">ReportLab + Matplotlib → PDF</div><div class="d">Color-coded tables, flight-path map, sensor charts; streamed back, temp files auto-cleaned.</div></div>
+  </div>
+</div></section>
+
+<!-- PIPELINE -->
+<section id="pipeline"><div class="wrap">
+  <div class="kicker reveal">Data-Flow Pipeline</div>
+  <h2 class="reveal">JIYI binary path (the hard one)</h2>
+  <p class="body reveal">The encrypted agricultural-drone path exercises every stage — decrypt, convert, parse, report.</p>
+  <div class="pipe">
+    <div class="pstep reveal"><div class="n">01</div><div class="h">Detect</div><div class="s">Magic byte <code>0x37</code> ⇒ encrypted JIYI</div></div>
+    <div class="pconn reveal"></div>
+    <div class="pstep reveal d1"><div class="n">02</div><div class="h">XOR-decrypt</div><div class="s">Every byte ⊕ <code>0x37</code></div></div>
+    <div class="pconn reveal d1"></div>
+    <div class="pstep reveal d2"><div class="n">03</div><div class="h">Convert</div><div class="s"><code>binToLog.exe</code> via Mono + Xvfb</div></div>
+    <div class="pconn reveal d2"></div>
+    <div class="pstep reveal d3"><div class="n">04</div><div class="h">Parse + Diagnose</div><div class="s">~30-check engine → PDF</div></div>
+  </div>
+</div></section>
+
+<!-- FORMAT DETECTION -->
+<section id="detect"><div class="wrap">
+  <div class="kicker reveal">Format Detection</div>
+  <h2 class="reveal">Which log is this?</h2>
+  <div class="tree panel reveal" style="margin-top:16px">
+    <div class="branch"><div class="cond">header == 0xA3 0x95</div><div class="res">→ <b>ArduPilot</b> DataFlash <code>.bin</code> — parsed directly in Python</div></div>
+    <div class="branch"><div class="cond">&gt;80% printable bytes</div><div class="res">→ <b>JIYI text</b> log (<code>.log/.txt/.csv</code>) — parsed directly</div></div>
+    <div class="branch"><div class="cond">header == 0x00 0xFF</div><div class="res">→ <b>JIYI binary</b> (plaintext) — convert → parse</div></div>
+    <div class="branch"><div class="cond">header == 0x37 0xC8</div><div class="res">→ <b>JIYI binary (XOR-encrypted)</b> — decrypt → convert → parse</div></div>
+  </div>
+</div></section>
+
+<!-- XOR -->
+<section id="xor"><div class="wrap">
+  <div class="kicker reveal">JIYI XOR Decryption</div>
+  <h2 class="reveal">Reverse-engineering the cipher</h2>
+  <p class="body reveal">JIYI obfuscates its SD-card logs with a <b>single-byte XOR cipher (key <code>0x37</code>)</b>. The giveaway: the encrypted header XORs cleanly into the known plaintext message marker.</p>
+  <div class="xor panel reveal">
+    <div class="byterow"><span class="lab">Encrypted header</span><span class="byte enc">0x37</span><span class="byte enc">0xC8</span></div>
+    <div class="byterow"><span class="lab">XOR key</span><span class="op">⊕</span><span class="byte key">0x37</span><span class="byte key">0x37</span></div>
+    <div class="byterow"><span class="lab">Decrypted (= JIYI marker)</span><span class="op">=</span><span class="byte dec">0x00</span><span class="byte dec b2">0xFF</span></div>
+    <div class="xnote">0x37 ⊕ 0x37 = <span class="hlg">0x00</span> · 0xC8 ⊕ 0x37 = <span class="hlg">0xFF</span> → the known JIYI header <code>0x00 0xFF</code>. Confirmed: the whole file is XOR'd with 0x37.</div>
+  </div>
+  <pre class="reveal" style="margin-top:14px">
+<span class="ha">def</span> _xor_decrypt(src, dst, key=<span class="hl">0x37</span>):
+    data = src.read_bytes()
+    dst.write_bytes(<span class="ha">bytes</span>(b ^ key <span class="ha">for</span> b <span class="ha">in</span> data))</pre>
+</div></section>
+
+<!-- PARSER -->
+<section id="parser"><div class="wrap">
+  <div class="kicker reveal">Self-Describing Binary Parser</div>
+  <h2 class="reveal">Schema first, then data</h2>
+  <p class="body reveal">Both binary formats begin messages with <b>FMT records (type <code>0x80</code>)</b> that declare each message's name, format string, and column names. The parser reads that schema, then <code>struct</code>-decodes every record — applying unit scalars (e.g. lat/lng × 1e-7).</p>
+  <div class="cards">
+    <div class="card reveal"><div class="s">Step 1 — Schema</div><h4>Read FMT (0x80) table</h4><p>Message id → name, format chars, columns. A <code>FORMAT_CHARS</code> map turns each char into a <code>struct</code> code + byte size.</p></div>
+    <div class="card reveal d1"><div class="s">Step 2 — Decode</div><h4>Unpack every record</h4><p>Scan for message markers, decode by type, apply scalars &amp; ASCII strings. Robustness: timestamp caps, range filters for corrupt values, median-not-last-value.</p></div>
+  </div>
+</div></section>
+
+<!-- ENGINE -->
+<section id="engine"><div class="wrap">
+  <div class="kicker reveal">Diagnostic Engine</div>
+  <h2 class="reveal">~30 checks · two phases</h2>
+  <div class="chips reveal">
+    <span class="chip pass">PASS</span><span class="chip warn">WARN</span><span class="chip fail">FAIL</span>
+    <span style="color:var(--muted);font-size:13px;align-self:center">each check → status + message + timestamp</span>
+  </div>
+  <div class="cats">
+    <div class="cat reveal"><h4>⚡ Power &amp; Battery</h4><ul><li>Clean boot / watchdog</li><li>Brownout &amp; sudden voltage drop</li><li>12S voltage thresholds</li><li>Battery failsafe</li></ul></div>
+    <div class="cat reveal d1"><h4>🧭 IMU &amp; Compass</h4><ul><li>IMU health &amp; consistency</li><li>Hardware-spike detection</li><li>Magnetic field magnitude</li><li>Compass interference (EKF variance)</li></ul></div>
+    <div class="cat reveal d2"><h4>🛰️ GPS &amp; EKF</h4><ul><li>Fix type &amp; satellite count</li><li>EKF readiness</li><li>Variance (SV/SP/SH)</li><li>Yaw alignment</li></ul></div>
+    <div class="cat reveal"><h4>🎮 RC &amp; Arming</h4><ul><li>RC signal / stuck channels</li><li>RC failsafe</li><li>Arming checks</li><li>Safety-bypass detection</li></ul></div>
+    <div class="cat reveal d1"><h4>🌾 Agricultural (JIYI)</h4><ul><li>Spray telemetry (area/volume/velocity)</li><li>Liquid used</li><li>Flight modes (spray start/stop)</li><li>Radar (ARA)</li></ul></div>
+    <div class="cat reveal d2"><h4>🛩️ Flight Behavior</h4><ul><li>Initial mode</li><li>Attitude tracking</li><li>Vibration</li><li>Altitude &amp; flight path</li></ul></div>
+  </div>
+</div></section>
+
+<!-- CHALLENGES -->
+<section id="challenges"><div class="wrap">
+  <div class="kicker reveal">Challenges &amp; Solutions</div>
+  <h2 class="reveal">Engineering the hard parts</h2>
+  <div class="cards">
+    <div class="card reveal"><div class="p">Problem</div><h4>Encrypted JIYI logs</h4><div class="s">Solution</div><p>Identified a single-byte XOR (0x37) from the header, decrypt the file, then convert.</p></div>
+    <div class="card reveal d1"><div class="p">Problem</div><h4>Windows-only .NET converter</h4><div class="s">Solution</div><p>Run <code>binToLog.exe</code> on Linux via <code>mono</code> inside a virtual display (<code>xvfb-run</code>) — fully headless in Docker.</p></div>
+    <div class="card reveal"><div class="p">Problem</div><h4>Converter uses fixed filenames</h4><div class="s">Solution</div><p>An <code>asyncio</code> lock serializes conversions so concurrent uploads never collide. (Future: per-job temp dirs / queue.)</p></div>
+    <div class="card reveal d1"><div class="p">Problem</div><h4>Corrupt / partial logs</h4><div class="s">Solution</div><p>Timestamp sanity caps, range filters for impossible values, and median-not-last-value so a corrupt end-of-log burst can't skew results.</p></div>
+  </div>
+</div></section>
+
+<!-- STACK -->
+<section id="stack"><div class="wrap">
+  <div class="kicker reveal">Tech Stack</div>
+  <h2 class="reveal">Built with</h2>
+  <div class="stack reveal" style="margin-top:8px">
+    <span class="tech">Python</span><span class="tech">FastAPI</span><span class="tech">Uvicorn</span><span class="tech">struct</span>
+    <span class="tech">NumPy</span><span class="tech">Matplotlib</span><span class="tech">ReportLab</span><span class="tech">asyncio</span>
+    <span class="tech">React</span><span class="tech">TypeScript</span><span class="tech">Vite</span><span class="tech">Tailwind</span>
+    <span class="tech">Docker</span><span class="tech">docker-compose</span><span class="tech">Mono</span><span class="tech">Xvfb</span>
+  </div>
+  <h2 class="reveal" style="margin-top:40px">Future work</h2>
+  <p class="body reveal">Automated tests · PX4 ULog support · parallel conversion (remove the lock) · a labeled validation set to measure check precision.</p>
+</div></section>
+
+<!-- ===================== PART 2: INTERVIEW PREP ===================== -->
+<div class="divider"><div class="wrap">
+  <div class="part reveal">Part 2</div>
+  <h2 class="reveal">Interview Preparation</h2>
+  <p class="reveal">Your introduction, the crash-investigation method, log-message reference, anomaly playbook, the numbers to memorize, and a Q&amp;A bank — tuned for a UAV Log Analysis role.</p>
+</div></div>
+
+<!-- INTRODUCTION -->
+<section id="intro"><div class="wrap">
+  <div class="kicker reveal">"Tell me about yourself"</div>
+  <h2 class="reveal">Your introduction</h2>
+  <p class="body reveal">Structure: <b>Present</b> (who you are now) → <b>Relevant work</b> (this project) → <b>Hands-on hardware</b> → <b>Why this role</b>. Lead with the project — it's why you got the interview.</p>
+  <div class="script reveal">
+    "I'm Janadri Yalla Yashwanth, a software engineer at Marut Drones with a B.Tech in CS (AI &amp; ML). I work across drone software — computer vision, autonomous flight, and backends — but the piece most relevant here is that I <b>built a full flight-log diagnostics platform end to end</b>. It ingests logs from two different flight controllers — <b>Pixhawk/ArduPilot and JIYI</b> — auto-detects the format (including <b>XOR-decrypting JIYI's encrypted logs</b>), and runs a two-phase, <b>~30-check engine</b> that flags power, IMU, GPS, EKF, compass, RC, and failsafe issues and infers probable crash causes, then generates a PDF report. I've also flown <b>real ArduPilot hardware</b> for an autonomous precision-landing project over MAVLink. So I've effectively been doing UAV log analysis end to end — and this role is exactly that, full-time, which is why I'm excited about it."
+  </div>
+  <p class="body reveal" style="margin-top:16px"><b>15-second version</b> (if they want it short):</p>
+  <div class="script short reveal">
+    "Software engineer at Marut Drones. I built a flight-log diagnostics tool that reads ArduPilot and JIYI logs — decrypting, parsing, and running ~30 automated health checks to find crash causes — and I've flown real ArduPilot hardware for precision landing. UAV log analysis is exactly the work I've been doing, so this role is a perfect fit."
+  </div>
+  <div class="two" style="margin-top:18px">
+    <div class="panel reveal"><h4 style="color:var(--green)">✓ Do</h4><ul><li>Lead with the log-analyzer project</li><li>Keep it 45–60 seconds</li><li>Name real tech (ArduPilot, MAVLink, XOR, EKF)</li><li>End with a clear "why this role"</li></ul></div>
+    <div class="panel reveal d1"><h4 style="color:var(--red)">✗ Avoid</h4><ul><li>Reciting your whole CV chronologically</li><li>Overclaiming seniority — you're early-career and that's fine</li><li>Buzzwords with no substance</li><li>Going past ~90 seconds</li></ul></div>
+  </div>
+</div></section>
+
+<!-- CRASH METHOD -->
+<section id="method"><div class="wrap">
+  <div class="kicker reveal">Crash Investigation Method</div>
+  <h2 class="reveal">How you investigate a log (say this out loud)</h2>
+  <div class="steps">
+    <div class="step2 reveal"><div class="k">1</div><div class="h">Context</div><div class="s">Frame, firmware (MSG), mission, mode, flight phase.</div></div>
+    <div class="step2 reveal d1"><div class="k">2</div><div class="h">What did it report?</div><div class="s">Scan ERR / EV / MODE for the first anomaly + timestamp.</div></div>
+    <div class="step2 reveal d2"><div class="k">3</div><div class="h">Control breakdown</div><div class="s">ATT DesRoll vs Roll — when did actual stop following desired?</div></div>
+    <div class="step2 reveal"><div class="k">4</div><div class="h">Work outward</div><div class="s">Motors (RCOU) → sensors (VIBE, GPS, MAG, EKF) → power (BAT/POWR).</div></div>
+    <div class="step2 reveal d1"><div class="k">5</div><div class="h">Root vs symptom</div><div class="s">What happened <i>first</i>? e.g. voltage sag → motor can't hold → attitude diverges.</div></div>
+    <div class="step2 reveal d2"><div class="k">6</div><div class="h">Report + CAPA</div><div class="s">Findings + corrective &amp; preventive actions for the fleet.</div></div>
+  </div>
+  <div class="script reveal" style="margin-top:16px">Golden line: "I always ask <b>what happened first</b> — the autopilot logs the symptom loudly, but the root cause is usually a few hundred milliseconds earlier in a different subsystem."</div>
+</div></section>
+
+<!-- LOG MESSAGES -->
+<section id="messages"><div class="wrap">
+  <div class="kicker reveal">Log Message Reference</div>
+  <h2 class="reveal">Key messages &amp; what they reveal</h2>
+  <div class="panel reveal" style="margin-top:14px;overflow:auto">
+    <table class="msgtbl">
+      <tr><th>Message</th><th>What to check</th></tr>
+      <tr><td class="m">ATT</td><td class="d">DesRoll/Roll, DesPitch/Pitch, DesYaw/Yaw → tracking error / loss of control</td></tr>
+      <tr><td class="m">RATE / CTUN</td><td class="d">rate desired vs achieved; throttle out, hover throttle, alt desired vs actual</td></tr>
+      <tr><td class="m">GPS</td><td class="d">fix status, satellite count (NSats), HDOP, speed, position jumps</td></tr>
+      <tr><td class="m">VIBE (+Clip)</td><td class="d">VibeX/Y/Z (m/s²); Clip0/1/2 accel-clipping counters (should be 0)</td></tr>
+      <tr><td class="m">MAG</td><td class="d">field magnitude, offsets, interference that scales with throttle/current</td></tr>
+      <tr><td class="m">BAT / POWR</td><td class="d">Volt vs Curr sag; POWR.Vcc board-5V rail → brownout</td></tr>
+      <tr><td class="m">RCIN / RCOU</td><td class="d">pilot inputs vs motor outputs; RCOU imbalance = failing motor/ESC/arm</td></tr>
+      <tr><td class="m">ESC</td><td class="d">per-ESC RPM, voltage, current, temperature</td></tr>
+      <tr><td class="m">EKF (NKF/XKF)</td><td class="d">innovations &amp; variances (velVar/posVar/hgtVar/magVar); lane switches</td></tr>
+      <tr><td class="m">MODE / ERR / EV</td><td class="d">mode changes + reason; subsystem errors/failsafes; arm/disarm/takeoff events</td></tr>
+    </table>
+  </div>
+</div></section>
+
+<!-- ANOMALY PLAYBOOK -->
+<section id="playbook"><div class="wrap">
+  <div class="kicker reveal">Anomaly Playbook</div>
+  <h2 class="reveal">Symptom → signature → cause</h2>
+  <div class="cards">
+    <div class="card reveal"><h4>Vibration</h4><p><b>Signature:</b> VIBE &gt;30 (bad &gt;60), clipping counters rising.</p><p><b>Effect:</b> EKF pos/alt errors, flyaways.</p><p><b>Fix:</b> balance props, soft-mount, harmonic notch filter.</p></div>
+    <div class="card reveal d1"><h4>GPS glitch / jamming</h4><p><b>Signature:</b> NSats drop, HDOP spike, position jumps, EKF pos innovations spike.</p><p><b>Effect:</b> LOITER drift, GPS failsafe. Spoofing = confident-but-wrong position.</p></div>
+    <div class="card reveal"><h4>Compass interference</h4><p><b>Signature:</b> high variance, field scales with throttle/current.</p><p><b>Effect:</b> toilet-bowling, yaw drift.</p><p><b>Fix:</b> recalibrate, COMPASS_MOT, relocate compass.</p></div>
+    <div class="card reveal d1"><h4>Power / brownout</h4><p><b>Signature:</b> Volt sag under Curr spike; POWR.Vcc dip; abrupt log end.</p><p><b>Cause:</b> sagging battery, weak BEC, loose connector.</p></div>
+    <div class="card reveal"><h4>ESC / motor failure</h4><p><b>Signature:</b> one RCOU channel persistently high to hold attitude; ESC RPM/temp anomaly.</p><p><b>Effect:</b> attitude diverges → crash.</p></div>
+    <div class="card reveal d1"><h4>Tuning oscillation</h4><p><b>Signature:</b> actual chases desired with ringing; oscillating motor outputs.</p><p><b>Fix:</b> Autotune; adjust rate PIDs / filters.</p></div>
+  </div>
+</div></section>
+
+<!-- NUMBERS -->
+<section id="numbers"><div class="wrap">
+  <div class="kicker reveal">Cheat Sheet</div>
+  <h2 class="reveal">Numbers to have cold</h2>
+  <div class="numgrid">
+    <div class="numitem reveal"><b>Vibration</b> — <span>&lt;15 great · 15–30 OK · 30–60 concerning · &gt;60 bad. Clipping should be 0.</span></div>
+    <div class="numitem reveal d1"><b>GPS</b> — <span>HDOP &lt;1 great, &lt;2 OK; NSats ≥6 min, ≥10 good; Status 3=3D,5=RTK-float,6=RTK-fixed.</span></div>
+    <div class="numitem reveal"><b>EKF variance (0–1)</b> — <span>&lt;0.5 good · 0.5–0.8 marginal · &gt;0.8 bad · ≥1.0 failsafe.</span></div>
+    <div class="numitem reveal d1"><b>Board Vcc (POWR)</b> — <span>~5.0 V; &lt;4.5 V → brownout risk.</span></div>
+    <div class="numitem reveal"><b>Battery (12S JIYI)</b> — <span>warn &lt;44 V, critical &lt;42 V.</span></div>
+    <div class="numitem reveal d1"><b>RCOU</b> — <span>balanced ≈ similar; one persistently high = that arm's motor/ESC/prop.</span></div>
+  </div>
+</div></section>
+
+<!-- Q&A -->
+<section id="qa"><div class="wrap">
+  <div class="kicker reveal">Q&amp;A Bank</div>
+  <h2 class="reveal">Likely questions &amp; crisp answers</h2>
+  <div class="qa reveal"><div class="q">How do you detect the log format?</div><div class="a">Magic bytes: 0xA3 0x95 → ArduPilot; 0x00 0xFF / 0x37 0xC8 → JIYI binary; else text via &gt;80% printable-byte sniff.</div></div>
+  <div class="qa reveal"><div class="q">Walk me through the JIYI XOR decryption.</div><div class="a">JIYI XORs logs with a single-byte key 0x37. The encrypted header 0x37 0xC8 XORs to 0x00 0xFF — the known plaintext marker — so I detect 0x37, XOR the whole file, then convert.</div></div>
+  <div class="qa reveal"><div class="q">Why Mono and Xvfb?</div><div class="a">binToLog.exe is a Windows .NET tool. Mono runs it on Linux; Xvfb gives it a virtual display so it runs headless in Docker.</div></div>
+  <div class="qa reveal"><div class="q">Why the asyncio lock — how would you remove it?</div><div class="a">The converter uses fixed filenames, so concurrent jobs would collide; the lock serializes them. Fix: per-job temp dirs or a conversion queue.</div></div>
+  <div class="qa reveal"><div class="q">How do you parse a self-describing binary log?</div><div class="a">Read the FMT (0x80) records that declare each message's fields, then struct-decode every record and apply unit scalars.</div></div>
+  <div class="qa reveal"><div class="q">Copter is toilet-bowling in LOITER — cause?</div><div class="a">Compass interference / bad calibration, or a GPS glitch. Check compass variance and field-vs-throttle, and GPS NSats/HDOP.</div></div>
+  <div class="qa reveal"><div class="q">How do you spot a failing motor/ESC?</div><div class="a">RCOU imbalance — one motor commanded persistently higher to hold attitude — plus ESC RPM/temp anomalies and matching vibration.</div></div>
+  <div class="qa reveal"><div class="q">IMU hardware fault vs a real maneuver?</div><div class="a">A hardware glitch is an instantaneous spike that snaps back the next sample; a maneuver is gradual. My detector flags the snap-back pattern.</div></div>
+  <div class="qa reveal"><div class="q">Signs of a brownout?</div><div class="a">Battery Volt drop under a current spike, POWR.Vcc dipping below ~4.5 V, and the log ending abruptly mid-flight.</div></div>
+  <div class="qa reveal"><div class="q">Biggest weaknesses / what would you improve?</div><div class="a">No automated tests, synchronous parsing, and the fixed-filename converter bottleneck. I'd add tests, per-job temp dirs, a job queue, and a labeled set to measure check precision.</div></div>
+</div></section>
+
+<!-- BEHAVIORAL + QUESTIONS TO ASK -->
+<section id="behavioral"><div class="wrap">
+  <div class="kicker reveal">Fit &amp; Closing</div>
+  <h2 class="reveal">Behavioral + questions to ask them</h2>
+  <div class="two">
+    <div class="panel reveal"><h4>Behavioral answers</h4><ul>
+      <li><b>Why this role:</b> "I built a log analyzer because I love finding <i>why</i> a flight failed — this role is that, full-time."</li>
+      <li><b>Teamwork:</b> you'd feed root causes to hardware / integration / flight-test teams.</li>
+      <li><b>Rigor:</b> crash analysis is forensic — show a methodical mindset.</li>
+      <li>Immediate joiner; open to relocation.</li>
+    </ul></div>
+    <div class="panel reveal d1"><h4>Ask them</h4><ul>
+      <li>Which platforms &amp; firmware — ArduPilot vs PX4, which frames?</li>
+      <li>Current log-analysis workflow — manual or automated?</li>
+      <li>Biggest recurring reliability issues on the fleet?</li>
+      <li>How deep is the GNSS-denied / EW work?</li>
+      <li>What does success look like in the first 6 months?</li>
+    </ul></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <div>Flight Log Analyzer — Project Documentation &amp; Interview Prep</div>
+  <div class="mono" style="margin-top:6px">Janadri Yalla Yashwanth · Software Engineer, Marut Drones</div>
+</div></footer>
+
+<script>
+  // progress bar + nav shadow
+  const bar=document.getElementById('bar'), nav=document.getElementById('nav');
+  addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const p=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;
+    bar.style.width=p+'%';
+    nav.classList.toggle('scrolled',h.scrollTop>40);
+  },{passive:true});
+
+  // scroll reveal
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.15});
+  document.querySelectorAll('.reveal:not(.in)').forEach(el=>io.observe(el));
+
+  // count-up
+  const cu=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(!e.isIntersecting) return; cu.unobserve(e.target);
+      const el=e.target, to=+el.dataset.to, suf=el.dataset.suffix||'';
+      const dur=1100, t0=performance.now();
+      const fmt=v=> to>=1000? Math.round(v).toLocaleString() : Math.round(v);
+      function step(t){ const k=Math.min(1,(t-t0)/dur); const v=to*(1-Math.pow(1-k,3));
+        el.innerHTML=fmt(v)+'<span class="u">'+suf+'</span>'; if(k<1)requestAnimationFrame(step);}
+      requestAnimationFrame(step);
+    });
+  },{threshold:.5});
+  document.querySelectorAll('.num[data-to]').forEach(el=>cu.observe(el));
+</script>
+</body>
+</html>

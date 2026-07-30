@@ -1,0 +1,75 @@
+
+> flight-deck-portfolio@1.0.0 dev
+> vite
+
+Port 5173 is in use, trying another one...
+Port 5174 is in use, trying another one...
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m444[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5175[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m3:40:17 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/tokens.css[22m
+[2m3:40:25 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/tokens.css[22m
+[2m3:40:36 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/global.css[22m
+[2m3:40:43 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/work.css[22m
+[2m3:54:36 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/components/snapshot/Snapshot.jsx, /src/components/Footer.jsx, /src/components/about/About.jsx, /src/components/spine/MobileNavSheet.jsx, /src/components/contact/Contact.jsx, /src/components/spine/Spine.jsx, /src/components/hero/Hero.jsx, /src/components/contact/AvailabilityNote.jsx, /src/components/about/ProfilePhoto.jsx, /src/components/contact/ContactLinks.jsx, /src/components/hero/CtaGroup.jsx, /src/components/common/CoordReadout.jsx[22m
+[2m3:54:47 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/components/snapshot/Snapshot.jsx, /src/components/Footer.jsx, /src/components/about/About.jsx, /src/components/spine/MobileNavSheet.jsx, /src/components/contact/Contact.jsx, /src/components/spine/Spine.jsx, /src/components/hero/Hero.jsx, /src/components/contact/AvailabilityNote.jsx, /src/components/about/ProfilePhoto.jsx, /src/components/contact/ContactLinks.jsx, /src/components/hero/CtaGroup.jsx, /src/components/common/CoordReadout.jsx[22m
+[2m3:54:47 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/components/snapshot/Snapshot.jsx, /src/components/Footer.jsx, /src/components/about/About.jsx, /src/components/spine/MobileNavSheet.jsx, /src/components/contact/Contact.jsx, /src/components/spine/Spine.jsx, /src/components/hero/Hero.jsx, /src/components/contact/AvailabilityNote.jsx, /src/components/about/ProfilePhoto.jsx, /src/components/contact/ContactLinks.jsx, /src/components/hero/CtaGroup.jsx, /src/components/common/CoordReadout.jsx[22m
+[2m3:55:02 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/components/snapshot/Snapshot.jsx, /src/components/Footer.jsx, /src/components/about/About.jsx, /src/components/spine/MobileNavSheet.jsx, /src/components/contact/Contact.jsx, /src/components/spine/Spine.jsx, /src/components/hero/Hero.jsx, /src/components/contact/AvailabilityNote.jsx, /src/components/about/ProfilePhoto.jsx, /src/components/contact/ContactLinks.jsx, /src/components/hero/CtaGroup.jsx, /src/components/common/CoordReadout.jsx[22m
+[2m3:55:16 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/path/FlightPath.jsx, /src/components/path/CertList.jsx[22m
+[2m3:55:25 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/stack/Stack.jsx[22m
+[2m3:55:30 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/stack/Stack.jsx[22m
+[2m3:55:35 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/stack/Stack.jsx[22m
+[2m3:55:41 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/stack/Stack.jsx[22m
+[2m3:55:47 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/stack/Stack.jsx[22m
+[2m3:55:58 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/stack/Stack.jsx[22m
+[2m3:56:13 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/Work.jsx, /src/components/work/FilterChips.jsx[22m
+[2m3:56:26 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/Work.jsx, /src/components/work/FilterChips.jsx[22m
+[2m3:56:39 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/Work.jsx, /src/components/work/FilterChips.jsx[22m
+[2m3:56:57 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/Work.jsx, /src/components/work/FilterChips.jsx[22m
+[2m3:57:18 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/Work.jsx, /src/components/work/FilterChips.jsx[22m
+[2m3:57:27 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/tokens.css[22m
+[2m3:59:31 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/stack/Stack.jsx[22m
+[2m3:59:33 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/ProjectCard.jsx[22m
+[2m3:59:34 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/hero/CtaGroup.jsx[22m
+[2m3:59:52 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/hero/Hero.jsx[22m
+[2m3:59:56 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/stack/stack.css[22m
+[2m4:00:06 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/stack/SkillGroup.jsx[22m
+[2m4:00:34 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/hero/hero.css[22m
+[2m4:00:36 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/Work.jsx[22m
+[2m4:01:01 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/work.css[22m
+[2m4:01:16 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/work.css[22m
+[2m4:06:16 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/hero/HeroStats.jsx[22m
+[2m4:06:21 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/hero/HeroStats.jsx[22m
+[2m4:08:20 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/common/Icon.jsx[22m
+[2m4:09:45 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx[22m
+[2m4:10:05 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/snapshot/ReadoutChip.jsx[22m
+[2m4:10:05 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/snapshot/snapshot.css[22m
+[2m4:10:05 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/snapshot/Snapshot.jsx[22m
+[2m4:10:05 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/path/CertList.jsx[22m
+[2m4:10:05 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/path/FlightPath.jsx[22m
+[2m4:10:05 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/path/path.css[22m
+[2m4:10:05 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/path/PathNode.jsx[22m
+[2m4:12:36 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/showcase/VisualShowcase.jsx[22m
+[2m10:36:36 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/showcase/VisualShowcase.jsx[22m
+[2m10:36:41 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/showcase/VisualShowcase.jsx[22m
+[2m10:36:42 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/showcase/VisualShowcase.jsx[22m
+[2m10:36:44 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/showcase/VisualShowcase.jsx[22m
+[2m10:36:46 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/showcase/VisualShowcase.jsx[22m
+[2m10:36:47 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/showcase/VisualShowcase.jsx[22m
+[2m10:36:52 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/Work.jsx, /src/components/work/FilterChips.jsx[22m
+[2m10:36:54 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/Work.jsx, /src/components/work/FilterChips.jsx[22m
+[2m10:36:56 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/work/Work.jsx, /src/components/work/FilterChips.jsx[22m
+[2m10:37:01 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/components/Footer.jsx, /src/components/about/About.jsx, /src/components/spine/MobileNavSheet.jsx, /src/components/contact/Contact.jsx, /src/components/spine/Spine.jsx, /src/components/hero/Hero.jsx, /src/components/contact/AvailabilityNote.jsx, /src/components/about/ProfilePhoto.jsx, /src/components/contact/ContactLinks.jsx, /src/components/hero/CtaGroup.jsx, /src/components/common/CoordReadout.jsx, /src/components/hero/HeroPortrait.jsx, /src/components/hero/HeroStats.jsx, /src/components/hero/HeroContactRow.jsx, /src/components/StickyResume.jsx[22m
+[2m10:37:06 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/timeline/Timeline.jsx[22m
+[2m10:37:08 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/components/Footer.jsx, /src/components/about/About.jsx, /src/components/spine/MobileNavSheet.jsx, /src/components/contact/Contact.jsx, /src/components/spine/Spine.jsx, /src/components/hero/Hero.jsx, /src/components/contact/AvailabilityNote.jsx, /src/components/about/ProfilePhoto.jsx, /src/components/contact/ContactLinks.jsx, /src/components/hero/CtaGroup.jsx, /src/components/common/CoordReadout.jsx, /src/components/hero/HeroPortrait.jsx, /src/components/hero/HeroStats.jsx, /src/components/hero/HeroContactRow.jsx, /src/components/StickyResume.jsx[22m
+[2m10:37:21 am[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mindex.html[22m
+[2m10:37:27 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/components/Footer.jsx, /src/components/about/About.jsx, /src/components/spine/MobileNavSheet.jsx, /src/components/contact/Contact.jsx, /src/components/spine/Spine.jsx, /src/components/hero/Hero.jsx, /src/components/contact/AvailabilityNote.jsx, /src/components/about/ProfilePhoto.jsx, /src/components/contact/ContactLinks.jsx, /src/components/hero/CtaGroup.jsx, /src/components/common/CoordReadout.jsx, /src/components/hero/HeroPortrait.jsx, /src/components/hero/HeroStats.jsx, /src/components/hero/HeroContactRow.jsx, /src/components/StickyResume.jsx[22m
+[2m10:37:37 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/hero/hero.css[22m
+[2m10:37:42 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/hero/HeroStats.jsx[22m
+[2m10:37:51 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/hero/hero.css[22m
+[2m10:37:59 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/marquee/ProofMarquee.jsx[22m
+[2m10:38:16 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/timeline/TimelineNode.jsx[22m
+[2m10:38:20 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/timeline/TimelineNode.jsx[22m
+[2m10:38:32 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/timeline/timeline.css[22m

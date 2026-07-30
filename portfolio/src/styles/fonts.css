@@ -1,0 +1,75 @@
+/* Self-hosted fonts — woff2 only, latin subset only.
+   Declared locally (instead of importing @fontsource/<family>/<weight>.css)
+   so the build ships only woff2 (no legacy .woff duplicates) and no latin-ext
+   subsets, which this English-only site never renders.
+   Asset URLs resolve into node_modules and are fingerprinted by Vite. */
+
+/* ---- Space Grotesk (display) ---- */
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("@fontsource/space-grotesk/files/space-grotesk-latin-400-normal.woff2")
+    format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url("@fontsource/space-grotesk/files/space-grotesk-latin-500-normal.woff2")
+    format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url("@fontsource/space-grotesk/files/space-grotesk-latin-600-normal.woff2")
+    format("woff2");
+}
+@font-face {
+  /* Hero display weight — served from public/fonts so it can be <link rel=preload>ed. */
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("/fonts/space-grotesk-latin-700-normal.woff2") format("woff2");
+}
+
+/* ---- Inter (sans / body) ---- */
+@font-face {
+  /* Body weight (hero subline/lead) — served from public/fonts for preload. */
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("/fonts/inter-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url("@fontsource/inter/files/inter-latin-500-normal.woff2")
+    format("woff2");
+}
+
+/* ---- JetBrains Mono (mono / telemetry) ---- */
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2")
+    format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url("@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2")
+    format("woff2");
+}

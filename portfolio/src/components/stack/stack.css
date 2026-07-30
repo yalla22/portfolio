@@ -1,0 +1,228 @@
+/* ============================================================
+   STACK — interactive skill cards + ecosystem diagram
+   Token-only colors; dark/light parity; no horizontal overflow.
+   ============================================================ */
+
+/* --- Skill card grid --------------------------------------- */
+.skill-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-4);
+}
+@media (min-width: 720px) {
+  .skill-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1100px) {
+  .skill-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.skill-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  /* Resting depth; hover lift/elevation comes from the shared .lift utility. */
+  box-shadow: var(--shadow-xs);
+}
+/* Accent rule that sweeps in on hover (reuses the card idiom). */
+.skill-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 220ms ease;
+}
+.skill-card:hover::before,
+.skill-card:focus-within::before {
+  transform: scaleY(1);
+}
+
+.skill-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.skill-card__label {
+  color: var(--text);
+}
+.skill-card__pct {
+  color: var(--accent-text);
+}
+
+.skill-card__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+}
+.skill-card__item {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  transition: color 150ms var(--ease-out), border-color 150ms var(--ease-out),
+    transform 150ms var(--ease-out);
+}
+.skill-card__item:hover {
+  color: var(--accent-text);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+/* --- Proficiency meter ------------------------------------- */
+.proficiency {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.proficiency__track {
+  position: relative;
+  flex: 1;
+  height: var(--meter-h);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.proficiency__fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform: scaleX(0);
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 70%, transparent),
+    var(--accent)
+  );
+  /* Subtle glow at the meter's leading edge. */
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.proficiency__value {
+  min-width: 2.5ch;
+  text-align: right;
+  color: var(--text-faint);
+}
+
+/* --- Ecosystem diagram ------------------------------------- */
+.stack__ecosystem {
+  margin-top: var(--sp-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.stack__ecosystem-kicker {
+  align-self: center;
+  color: var(--text-faint);
+}
+
+.ecosystem {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+.ecosystem__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Hidden on narrow screens — legend carries the content there. */
+}
+
+.ecosystem__link {
+  stroke: var(--border-strong);
+  stroke-width: 1.25;
+}
+
+.ecosystem__node-bg {
+  fill: var(--bg-elevated);
+  stroke: var(--border);
+  stroke-width: 1.25;
+}
+.ecosystem__node:hover .ecosystem__node-bg {
+  stroke: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.ecosystem__node-label {
+  fill: var(--text);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.ecosystem__hub-bg {
+  fill: var(--accent-weak);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+.ecosystem__hub-label {
+  fill: var(--accent-text);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+/* Stacked legend — hidden on wide screens where the SVG reads clearly. */
+.ecosystem__legend {
+  display: grid;
+  gap: var(--sp-3);
+  width: 100%;
+}
+.ecosystem__legend-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding-block: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+.ecosystem__legend-label {
+  color: var(--text);
+}
+.ecosystem__legend-items {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Diagram is the primary visual at >=620px; legend takes over below. */
+@media (max-width: 619px) {
+  .ecosystem__svg {
+    display: none;
+  }
+}
+@media (min-width: 620px) {
+  .ecosystem__legend {
+    display: none;
+  }
+}
+
+/* Reduced motion: nothing animates; CSS transition-based sweeps disabled. */
+@media (prefers-reduced-motion: reduce) {
+  .skill-card::before,
+  .proficiency__fill,
+  .skill-card__item {
+    transition: none;
+  }
+  .skill-card__item:hover {
+    transform: none;
+  }
+}
